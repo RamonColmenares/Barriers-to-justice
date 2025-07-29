@@ -18,6 +18,7 @@ RAW_DATA_FILES = {
 
 # Cache configuration
 CACHE_FILES = {
+    'juvenile_history': 'juvenile_history_cache.pkl',
     'juvenile_cases': 'juvenile_cases_cache.pkl',
     'proceedings': 'proceedings_cache.pkl',
     'reps_assigned': 'reps_assigned_cache.pkl',

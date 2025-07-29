@@ -16,78 +16,91 @@ except ImportError:
     from models import cache
 
 def generate_representation_outcomes_chart():
-    """Generate Plotly chart data for representation vs outcomes chart (EXACTLY like notebook)"""
+    """Generate Plotly chart for representation vs outcomes (EXACTLY like notebook)"""
     analysis_filtered = cache.get('analysis_filtered')
     
     if analysis_filtered is None or analysis_filtered.empty:
         return {"error": "No analysis data available"}
     
     try:
-        # EXACTLY like notebook: Create crosstab for representation vs outcomes
-        crosstab = pd.crosstab(
+        print("Generating representation outcomes chart EXACTLY like notebook...")
+        
+        # EXACTLY like notebook: Create count data
+        crosstab_counts = pd.crosstab(
             analysis_filtered['HAS_LEGAL_REP'], 
             analysis_filtered['BINARY_OUTCOME']
         )
         
-        # EXACTLY like notebook: Calculate percentages using normalize='index' 
-        # This gives percentages PER ROW (each representation category sums to 100%)
+        print("Count data:")
+        print(crosstab_counts)
+        
+        # EXACTLY like notebook: Calculate percentages (normalize by index - each row sums to 100%)
         percentage_data = pd.crosstab(
             analysis_filtered['HAS_LEGAL_REP'],
             analysis_filtered['BINARY_OUTCOME'], 
-            normalize='index'  # EXACTLY like notebook - normalize by rows
+            normalize='index'  # EXACTLY like notebook - percentages within each representation category
         ) * 100
         
-        # Create Plotly figure exactly like notebook
+        print("Percentage data:")
+        print(percentage_data.round(1))
+        
+        # Create Plotly figure for count plot with log scale (EXACTLY like notebook)
         fig = go.Figure()
         
-        # Add Favorable outcomes bar (using the percentage data from notebook logic)
-        fig.add_trace(go.Bar(
-            name='Favorable',
-            x=crosstab.index,
-            y=crosstab['Favorable'],
-            marker_color='#10B981',
-            text=[f"{p:.1f}%" for p in percentage_data['Favorable']],
-            textposition='inside',
-            textfont=dict(color='white', size=12)
-        ))
+        # Custom colors EXACTLY like notebook
+        colors = {
+            'Favorable': '#B5E68160',  # Light green with transparency
+            'Unfavorable': '#FF5E5E7D'  # Light red with transparency  
+        }
         
-        # Add Unfavorable outcomes bar
-        fig.add_trace(go.Bar(
-            name='Unfavorable',
-            x=crosstab.index,
-            y=crosstab['Unfavorable'],
-            marker_color='#EF4444',
-            text=[f"{p:.1f}%" for p in percentage_data['Unfavorable']],
-            textposition='inside',
-            textfont=dict(color='white', size=12)
-        ))
+        # Get the categories (representation levels)
+        categories = crosstab_counts.index.tolist()
         
-        # Update layout to match notebook style
+        # Add bars for each outcome type
+        for outcome in ['Favorable', 'Unfavorable']:
+            if outcome in crosstab_counts.columns:
+                # Get percentages for text labels
+                percentages = percentage_data[outcome] if outcome in percentage_data.columns else [0] * len(categories)
+                
+                fig.add_trace(go.Bar(
+                    name=outcome,
+                    x=categories,
+                    y=crosstab_counts[outcome],
+                    marker_color=colors.get(outcome, '#888888'),
+                    text=[f"{p:.1f}%" for p in percentages],
+                    textposition='inside',
+                    textfont=dict(color='white', size=12, weight='bold')
+                ))
+        
+        # Update layout EXACTLY like notebook
         fig.update_layout(
             title={
                 'text': 'Case Outcomes by Legal Representation Status',
                 'x': 0.5,
-                'font': {'size': 16, 'family': 'Arial, sans-serif'}
+                'font': {'size': 16, 'family': 'Arial, sans-serif', 'color': '#333'}
             },
-            barmode='stack',
+            barmode='group',  # Side by side bars like seaborn countplot
             xaxis={
                 'title': 'Legal Representation',
                 'tickangle': 0,
-                'title_font': {'size': 14}
+                'title_font': {'size': 14},
+                'showgrid': False
             },
             yaxis={
                 'title': 'Count',
-                'type': 'log',  # Log scale exactly like in notebook
-                'title_font': {'size': 14}
+                'type': 'log',  # Log scale EXACTLY like notebook
+                'title_font': {'size': 14},
+                'showgrid': True,
+                'gridcolor': 'rgba(128,128,128,0.3)'
             },
             showlegend=True,
             legend=dict(
                 title='Case Outcome',
                 orientation='v',
-                x=1.05,
+                x=1.02,
                 y=1
             ),
-            margin=dict(t=60, l=60, r=30, b=80),
+            margin=dict(t=80, l=80, r=120, b=100),
             plot_bgcolor='white',
             paper_bgcolor='white',
             font=dict(family='Arial, sans-serif'),
@@ -107,11 +120,137 @@ def generate_representation_outcomes_chart():
             }
         }
         
+        # Also return summary data for debugging
+        summary_data = {
+            'count_data': crosstab_counts.to_dict(),
+            'percentage_data': percentage_data.round(1).to_dict(),
+            'total_cases': len(analysis_filtered)
+        }
+        
         # Convert to JSON-serializable format
-        return json.loads(plotly.utils.PlotlyJSONEncoder().encode(chart_data))
+        result = json.loads(plotly.utils.PlotlyJSONEncoder().encode(chart_data))
+        result['summary'] = summary_data
+        
+        return result
         
     except Exception as e:
+        print(f"Chart generation error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return {"error": f"Chart generation error: {str(e)}"}
+
+def generate_outcome_percentages_chart():
+    """Generate the percentage breakdown chart EXACTLY like notebook (stacked bar chart)"""
+    analysis_filtered = cache.get('analysis_filtered')
+    
+    if analysis_filtered is None or analysis_filtered.empty:
+        return {"error": "No analysis data available"}
+    
+    try:
+        print("Generating outcome percentages chart EXACTLY like notebook...")
+        
+        # EXACTLY like notebook: Calculate percentages correctly
+        percentage_data = (
+            pd.crosstab(
+                analysis_filtered["HAS_LEGAL_REP"],
+                analysis_filtered["BINARY_OUTCOME"],
+                normalize="index",  # EXACTLY like notebook - normalize by rows
+            )
+            * 100
+        )
+        
+        print("Percentage breakdown of outcomes by legal representation:")
+        print(percentage_data.round(1))
+        
+        # Create stacked bar chart EXACTLY like notebook
+        fig = go.Figure()
+        
+        # Colors for the stacked chart (using Set2 colormap style)
+        colors = {
+            'Favorable': '#66C2A5',  # Green
+            'Unfavorable': '#FC8D62'  # Orange/Red
+        }
+        
+        categories = percentage_data.index.tolist()
+        
+        # Add stacked bars for each outcome
+        for outcome in ['Favorable', 'Unfavorable']:
+            if outcome in percentage_data.columns:
+                fig.add_trace(go.Bar(
+                    name=outcome,
+                    x=categories,
+                    y=percentage_data[outcome],
+                    marker_color=colors.get(outcome, '#888888'),
+                    text=[f"{p:.1f}%" for p in percentage_data[outcome]],
+                    textposition='inside',
+                    textfont=dict(color='white', size=12, weight='bold')
+                ))
+        
+        # Update layout EXACTLY like notebook
+        fig.update_layout(
+            title={
+                'text': 'Case Outcome Percentages by Legal Representation Status',
+                'x': 0.5,
+                'font': {'size': 16, 'family': 'Arial, sans-serif', 'color': '#333'}
+            },
+            barmode='stack',  # Stacked bars EXACTLY like notebook
+            xaxis={
+                'title': 'Legal Representation',
+                'tickangle': 0,
+                'title_font': {'size': 14},
+                'showgrid': False
+            },
+            yaxis={
+                'title': 'Percentage (%)',
+                'title_font': {'size': 14},
+                'showgrid': True,
+                'gridcolor': 'rgba(128,128,128,0.3)',
+                'range': [0, 100]
+            },
+            showlegend=True,
+            legend=dict(
+                title='Case Outcome',
+                orientation='v',
+                x=1.02,
+                y=1
+            ),
+            margin=dict(t=80, l=80, r=120, b=100),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(family='Arial, sans-serif'),
+            width=800,
+            height=500
+        )
+        
+        # Convert to JSON format for frontend
+        chart_data = {
+            'data': fig.data,
+            'layout': fig.layout,
+            'config': {
+                'responsive': True,
+                'displayModeBar': True,
+                'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d'],
+                'displaylogo': False
+            }
+        }
+        
+        # Also return the actual percentage values
+        summary_data = {
+            'percentage_breakdown': percentage_data.round(1).to_dict(),
+            'total_cases': len(analysis_filtered)
+        }
+        
+        # Convert to JSON-serializable format
+        result = json.loads(plotly.utils.PlotlyJSONEncoder().encode(chart_data))
+        result['summary'] = summary_data
+        
+        return result
+        
+    except Exception as e:
+        print(f"Percentage chart generation error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"error": f"Percentage chart generation error: {str(e)}"}
 
 def generate_time_series_chart():
     """Generate Plotly time series chart exactly like notebook"""

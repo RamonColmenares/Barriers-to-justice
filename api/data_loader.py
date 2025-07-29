@@ -47,6 +47,27 @@ def load_raw_files_from_cache():
         cache_dir = get_cache_dir()
         print("📁 Loading data from raw files in cache...")
         
+        # Load juvenile_history_cleaned.csv.gz (EXACTLY like notebook)
+        history_path = os.path.join(cache_dir, RAW_DATA_FILES['juvenile_history'])
+        if os.path.exists(history_path):
+            print("   Loading juvenile history...")
+            juvenile_history = pd.read_csv(
+                filepath_or_buffer=history_path,
+                compression="gzip",  # File is compressed
+                dtype={
+                    "idnJuvenileHistory": "Int64",
+                    "idnCase": "Int64",
+                    "idnProceeding": "Int64",
+                    "idnJuvenile": "category",
+                },
+                low_memory=False,
+            )
+            cache.set('juvenile_history', juvenile_history)
+            print(f"   ✅ Loaded {len(juvenile_history):,} juvenile history records")
+        else:
+            print(f"   ⚠️ Optional juvenile history file not found: {history_path}")
+            cache.set('juvenile_history', pd.DataFrame())
+        
         # Load juvenile_cases_cleaned.csv.gz
         cases_path = os.path.join(cache_dir, RAW_DATA_FILES['juvenile_cases'])
         if os.path.exists(cases_path):
@@ -171,6 +192,7 @@ def load_from_cache():
         
         # Check if all required cache files exist
         required_caches = ['juvenile_cases', 'proceedings', 'reps_assigned', 'lookup_decisions']
+        optional_caches = ['juvenile_history', 'lookup_juvenile']
         cache_files_exist = all(
             os.path.exists(os.path.join(cache_dir, CACHE_FILES[key])) 
             for key in required_caches
@@ -189,12 +211,16 @@ def load_from_cache():
                 cache.set(key, pickle.load(f))
                 print(f"   📁 Loaded {key} from cache")
         
-        # Load optional lookup_juvenile if it exists
-        juvenile_cache_path = os.path.join(cache_dir, CACHE_FILES['lookup_juvenile'])
-        if os.path.exists(juvenile_cache_path):
-            with open(juvenile_cache_path, 'rb') as f:
-                cache.set('lookup_juvenile', pickle.load(f))
-                print("   📁 Loaded lookup_juvenile from cache")
+        # Load optional files if they exist
+        for key in optional_caches:
+            cache_file_path = os.path.join(cache_dir, CACHE_FILES[key])
+            if os.path.exists(cache_file_path):
+                with open(cache_file_path, 'rb') as f:
+                    cache.set(key, pickle.load(f))
+                    print(f"   📁 Loaded {key} from cache")
+            else:
+                print(f"   ⚠️ Optional {key} cache not found")
+                cache.set(key, pd.DataFrame())
         
         # Load analysis data if it exists
         analysis_cache_path = os.path.join(cache_dir, CACHE_FILES['analysis_filtered'])
