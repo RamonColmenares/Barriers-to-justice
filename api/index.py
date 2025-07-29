@@ -116,4 +116,9 @@ def handler(request, context):
     return app(request.environ)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    print("🚀 Starting development server...")
+    print("🌐 Backend running on http://localhost:5000")
+    print("📋 Available endpoints:")
+    print("   GET /api/health")
+    print("   GET /api/overview")
+    app.run(debug=True, host='0.0.0.0', port=5000)

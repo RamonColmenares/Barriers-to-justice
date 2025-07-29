@@ -22,13 +22,5 @@
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
-  ],
-  "env": {
-    "PYTHON_VERSION": "3.11"
-  },
-  "functions": {
-    "api/index.py": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
