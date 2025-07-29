@@ -18,7 +18,7 @@
       <div class="text-center mb-16">
         <h2 class="text-3xl font-bold tracking-tight text-[var(--color-primary)] sm:text-4xl mb-4">Research Team</h2>
         <p class="text-lg text-[var(--color-text-secondary)] max-w-3xl mx-auto">
-          MIT Emerging Talent students dedicated to uncovering barriers to justice. All team members are at the same level, collaborating as equals in this research.
+          MIT Emerging Talent students dedicated to uncovering barriers to justice.
         </p>
       </div>
 
@@ -26,11 +26,12 @@
         <!-- Ammar Osman -->
         <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
           <div class="w-32 h-32 mb-4">
-            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-                 style="background-image: url('/team/ammar-osman.jpg'), linear-gradient(135deg, var(--color-accent), var(--color-primary))">
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-                AO
-              </div>
+            <img src="/team/ammar-osman.jpg" alt="Ammar Osman" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-accent), var(--color-primary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              AO
             </div>
           </div>
           <a href="https://github.com/AmmarIbrahimTech" target="_blank" rel="noopener noreferrer" 
@@ -43,11 +44,12 @@
         <!-- Amro Mohamed -->
         <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
           <div class="w-32 h-32 mb-4">
-            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-                 style="background-image: url('/team/amro-mohamed.jpg'), linear-gradient(135deg, var(--color-secondary), var(--color-primary))">
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-                AM
-              </div>
+            <img src="/team/amro-mohamed.jpg" alt="Amro Mohamed" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-secondary), var(--color-primary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              AM
             </div>
           </div>
           <a href="https://github.com/Elshikh-Amro" target="_blank" rel="noopener noreferrer" 
@@ -60,11 +62,12 @@
         <!-- Azza Omer -->
         <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
           <div class="w-32 h-32 mb-4">
-            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-                 style="background-image: url('/team/azza.jpg'), linear-gradient(135deg, var(--color-primary), var(--color-accent))">
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-                AZ
-              </div>
+            <img src="/team/azza.jpg" alt="Azza Omer" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-primary), var(--color-accent))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              AZ
             </div>
           </div>
           <a href="https://github.com/AzzaOmer1" target="_blank" rel="noopener noreferrer" 
@@ -77,11 +80,12 @@
         <!-- Banu Ozyilmaz -->
         <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
           <div class="w-32 h-32 mb-4">
-            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-                 style="background-image: url('/team/banu-ozyilmaz.jpg'), linear-gradient(135deg, var(--color-accent), var(--color-secondary))">
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-                BO
-              </div>
+            <img src="/team/banu-ozyilmaz.jpg" alt="Banu Ozyilmaz" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-accent), var(--color-secondary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              BO
             </div>
           </div>
           <a href="https://github.com/doctorbanu" target="_blank" rel="noopener noreferrer" 
@@ -94,11 +98,12 @@
         <!-- Gennadii Ershov -->
         <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
           <div class="w-32 h-32 mb-4">
-            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-                 style="background-image: url('/team/gennadii-ershov.jpg'), linear-gradient(135deg, var(--color-secondary), var(--color-primary))">
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-                GE
-              </div>
+            <img src="/team/gennadii-ershov.jpg" alt="Gennadii Ershov" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-secondary), var(--color-primary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              GE
             </div>
           </div>
           <a href="https://github.com/imwaymaran" target="_blank" rel="noopener noreferrer" 
@@ -111,11 +116,12 @@
         <!-- Muhammet Ali Isik -->
         <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
           <div class="w-32 h-32 mb-4">
-            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-                 style="background-image: url('/team/muhammet-isik.jpg'), linear-gradient(135deg, var(--color-primary), var(--color-secondary))">
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-                MI
-              </div>
+            <img src="/team/muhammet-isik.jpg" alt="Muhammet Ali Isik" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              MI
             </div>
           </div>
           <a href="https://github.com/misik-eng" target="_blank" rel="noopener noreferrer" 
@@ -128,16 +134,53 @@
         <!-- Ramón Colmenares -->
         <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
           <div class="w-32 h-32 mb-4">
-            <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-                 style="background-image: url('/team/ramon-colmenares.jpg'), linear-gradient(135deg, var(--color-accent), var(--color-primary))">
-              <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-                RC
-              </div>
+            <img src="/team/ramon-colmenares.jpg" alt="Ramón Colmenares" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-accent), var(--color-primary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              RC
             </div>
           </div>
           <a href="https://github.com/RamonColmenares" target="_blank" rel="noopener noreferrer" 
              class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
             Ramón Colmenares
+          </a>
+          <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
+        </div>
+
+        <!-- Muhammad Shahroz -->
+        <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
+          <div class="w-32 h-32 mb-4">
+            <img src="/team/muhammad-shahroz.jpg" alt="Muhammad Shahroz" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-accent), var(--color-primary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              MS
+            </div>
+          </div>
+          <a href="https://github.com/Shahroz657" target="_blank" rel="noopener noreferrer" 
+             class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
+            Muhammad Shahroz
+          </a>
+          <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
+        </div>
+
+        <!-- Niloufar Ahadi -->
+        <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
+          <div class="w-32 h-32 mb-4">
+            <img src="/team/niloufar-ahadi.jpg" alt="Niloufar Ahadi" 
+                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
+                 style="background: linear-gradient(135deg, var(--color-accent), var(--color-secondary))"
+                 on:error={handleImageError} />
+            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
+              NA
+            </div>
+          </div>
+          <a href="https://github.com/NiloufarAhadi" target="_blank" rel="noopener noreferrer" 
+             class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
+            Niloufar Ahadi
           </a>
           <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
         </div>
@@ -222,3 +265,10 @@
     </div>
   </section>
 </main>
+
+<script>
+  function handleImageError(event) {
+    event.target.style.display = 'none';
+    event.target.nextElementSibling.style.display = 'flex';
+  }
+</script>

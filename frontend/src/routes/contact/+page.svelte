@@ -15,7 +15,7 @@
   <!-- Contact Methods -->
   <section class="py-16 bg-white">
     <div class="mx-auto max-w-7xl px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
         <!-- GitHub -->
         <div class="text-center">
           <div class="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -25,14 +25,7 @@
           </div>
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">GitHub</h3>
           <p class="text-[var(--color-text-secondary)] mb-4">Access our code repositories and contribute</p>
-          <div class="space-y-2">
-            <a href="https://github.com/RamonColmenares" target="_blank" rel="noopener noreferrer" class="block text-[var(--color-accent)] hover:text-[var(--color-secondary)] font-medium">
-              @RamonColmenares
-            </a>
-            <a href="https://github.com/AmmarIbrahimTech" target="_blank" rel="noopener noreferrer" class="block text-[var(--color-accent)] hover:text-[var(--color-secondary)] font-medium">
-              @AmmarIbrahimTech
-            </a>
-          </div>
+          <p class="text-sm text-[var(--color-text-secondary)]">Find our individual GitHub profiles on the Team page</p>
         </div>
 
         <!-- LinkedIn -->
@@ -44,25 +37,7 @@
           </div>
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">LinkedIn</h3>
           <p class="text-[var(--color-text-secondary)] mb-4">Connect with our team professionally</p>
-          <div class="space-y-2">
-            <p class="text-sm text-[var(--color-text-secondary)]">Professional networking profiles</p>
-            <p class="text-sm text-[var(--color-text-secondary)]">Coming soon...</p>
-          </div>
-        </div>
-
-        <!-- Location -->
-        <div class="text-center">
-          <div class="w-16 h-16 bg-[var(--color-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">Location</h3>
-          <p class="text-[var(--color-text-secondary)] mb-4">Our research is conducted globally</p>
-          <p class="text-[var(--color-text-secondary)]">
-            Global collaboration<br>
-            MIT Emerging Talent Program
-          </p>
+          <p class="text-sm text-[var(--color-text-secondary)]">Professional networking profiles coming soon</p>
         </div>
       </div>
     </div>
@@ -133,50 +108,38 @@
           <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-8">Research Team</h2>
           
           <div class="space-y-6">
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <!-- Team Page Link Card -->
+            <div class="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] rounded-lg shadow-lg p-6 text-white">
               <div class="flex items-center mb-4">
-                <div class="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mr-4">
-                  <span class="text-white font-bold text-xl">RS</span>
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                  <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                  </svg>
                 </div>
                 <div>
-                  <h3 class="text-lg font-bold text-[var(--color-primary)]">Ramón Soriano</h3>
-                  <p class="text-[var(--color-text-secondary)]">Lead Researcher & Data Scientist</p>
+                  <h3 class="text-lg font-bold text-white">Meet Our Team</h3>
+                  <p class="text-white/90">Researchers & Collaborators</p>
                 </div>
               </div>
-              <p class="text-[var(--color-text-secondary)] text-sm mb-3">
-                Specializes in immigration policy analysis and statistical modeling. Leading the quantitative analysis and data processing efforts.
+              <p class="text-white/90 text-sm mb-4">
+                Discover our dedicated team of researchers working to understand barriers to justice in the U.S. immigration system.
               </p>
               <div class="flex gap-3">
-                <span class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm cursor-default">LinkedIn</span>
-                <span class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm cursor-default">GitHub</span>
-                <a href="mailto:ramon@barriers-to-justice.org" class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm">Email</a>
+                <a href="/team" class="inline-flex items-center px-4 py-2 bg-white text-[var(--color-primary)] font-medium rounded-md hover:bg-gray-100 transition-colors text-sm">
+                  View Full Team
+                  <svg class="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                  </svg>
+                </a>
               </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-lg p-6">
-              <div class="flex items-center mb-4">
-                <div class="w-16 h-16 bg-[var(--color-secondary)] rounded-full flex items-center justify-center mr-4">
-                  <span class="text-white font-bold text-xl">AI</span>
-                </div>
-                <div>
-                  <h3 class="text-lg font-bold text-[var(--color-primary)]">Ammar Ibrahim</h3>
-                  <p class="text-[var(--color-text-secondary)]">Research Analyst</p>
-                </div>
-              </div>
-              <p class="text-[var(--color-text-secondary)] text-sm mb-3">
-                Focuses on policy impact analysis and qualitative research methods. Contributing to data exploration and systems thinking approaches.
-              </p>
-              <div class="flex gap-3">
-                <span class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm cursor-default">LinkedIn</span>
-                <a href="mailto:ammar@barriers-to-justice.org" class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm">Email</a>
-              </div>
-            </div>
-
+            <!-- MIT Emerging Talent Card -->
             <div class="bg-white rounded-lg shadow-lg p-6">
               <div class="flex items-center mb-4">
                 <div class="w-16 h-16 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4">
                   <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zM4 18v-4h3v4h2v-7.5c0-.83.67-1.5 1.5-1.5S12 9.67 12 10.5V18h2v-4h3v4h2V9.5c0-1.38-1.12-2.5-2.5-2.5H17c-.41 0-.8.11-1.13.3l-1.87.9V5.5C14 4.67 13.33 4 12.5 4S11 4.67 11 5.5V9L8.5 7c-.24-.14-.5-.21-.78-.21-.92 0-1.72.79-1.72 1.71v9.5h2z"/>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
                 </div>
                 <div>
@@ -184,12 +147,14 @@
                   <p class="text-[var(--color-text-secondary)]">Program Affiliation</p>
                 </div>
               </div>
-              <p class="text-[var(--color-text-secondary)] text-sm mb-3">
+              <p class="text-[var(--color-text-secondary)] text-sm mb-4">
                 This research is conducted as part of the MIT Emerging Talent program, fostering innovative approaches to critical social challenges.
               </p>
               <div class="flex gap-3">
-                <span class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm cursor-default">Program Website</span>
-                <span class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm cursor-default">Learn More</span>
+                <a href="https://emergingtalent.mit.edu" target="_blank" rel="noopener noreferrer" 
+                   class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm">Program Website</a>
+                <a href="https://emergingtalent.mit.edu" target="_blank" rel="noopener noreferrer" 
+                   class="text-[var(--color-accent)] hover:text-[var(--color-secondary)] text-sm">Learn More</a>
               </div>
             </div>
           </div>

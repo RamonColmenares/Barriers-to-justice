@@ -118,143 +118,51 @@
       <h2 class="section-title">Meet the Research Team</h2>
       <p class="section-subtitle">MIT Emerging Talent students dedicated to uncovering barriers to justice.</p>
     </div>
-    <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <img src="/team/ammar-osman.jpg" alt="Ammar Osman" 
-               class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
-               style="background: linear-gradient(135deg, var(--color-accent), var(--color-primary))"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-          <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
-            AO
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <!-- Team Page Link Card -->
+      <div class="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] rounded-2xl shadow-lg overflow-hidden text-white group hover:scale-105 transition-transform duration-300">
+        <div class="p-8 text-center">
+          <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
           </div>
+          <h3 class="text-2xl font-bold mb-4">Research Team</h3>
+          <p class="text-white/90 font-medium mb-6">Meet Our Researchers</p>
+          <p class="text-white/80 text-sm mb-6">
+            Discover our team of dedicated researchers working to understand barriers to justice in the U.S. immigration system.
+          </p>
+          <a href="/team" 
+             class="inline-flex items-center px-6 py-3 bg-white text-[var(--color-primary)] font-bold rounded-lg hover:bg-gray-100 transition-colors">
+            Meet the Team
+            <svg class="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </a>
         </div>
-        <a href="https://github.com/AmmarIbrahimTech" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Ammar Osman
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
       </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <img src="/team/amro-mohamed.jpg" alt="Amro Mohamed" 
-               class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
-               style="background: linear-gradient(135deg, var(--color-secondary), var(--color-primary))"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-          <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
-            AM
+
+      <!-- MIT Emerging Talent Card -->
+      <div class="bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-accent)] rounded-2xl shadow-lg overflow-hidden text-white group hover:scale-105 transition-transform duration-300">
+        <div class="p-8 text-center">
+          <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
           </div>
+          <h3 class="text-2xl font-bold mb-4">MIT Emerging Talent</h3>
+          <p class="text-white/90 font-medium mb-6">Program Support & Guidance</p>
+          <p class="text-white/80 text-sm mb-6">
+            This research is conducted as part of the MIT Emerging Talent program, which provides support and guidance to help us develop innovative approaches to critical social challenges.
+          </p>
+          <a href="https://emergingtalent.mit.edu" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center px-6 py-3 bg-white text-[var(--color-secondary)] font-bold rounded-lg hover:bg-gray-100 transition-colors">
+            Learn More
+            <svg class="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+            </svg>
+          </a>
         </div>
-        <a href="https://github.com/Elshikh-Amro" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Amro Mohamed
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-      </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-               style="background-image: url('/team/azza.jpg'), linear-gradient(135deg, var(--color-accent), var(--color-secondary))">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-              AZ
-            </div>
-          </div>
-        </div>
-        <a href="https://github.com/AzzaOmer1" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Azza
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-      </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-               style="background-image: url('/team/banu-ozyilmaz.jpg'), linear-gradient(135deg, var(--color-primary), var(--color-accent))">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-              BÖ
-            </div>
-          </div>
-        </div>
-        <a href="https://github.com/doctorbanu" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Banu Özyılmaz
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-      </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-               style="background-image: url('/team/gennadii-ershov.jpg'), linear-gradient(135deg, var(--color-secondary), var(--color-accent))">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-accent)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-              GE
-            </div>
-          </div>
-        </div>
-        <a href="https://github.com/GennadiiErshov" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Gennadii Ershov
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-      </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-               style="background-image: url('/team/muhammad-shahroz.jpg'), linear-gradient(135deg, var(--color-accent), var(--color-primary))">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-              MS
-            </div>
-          </div>
-        </div>
-        <a href="https://github.com/Shahroz657" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Muhammad Shahroz
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-      </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-               style="background-image: url('/team/muhammet-isik.jpg'), linear-gradient(135deg, var(--color-primary), var(--color-secondary))">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-              MI
-            </div>
-          </div>
-        </div>
-        <a href="https://github.com/misik-eng" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Muhammet Isik
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-      </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-               style="background-image: url('/team/niloufar-ahadi.jpg'), linear-gradient(135deg, var(--color-accent), var(--color-secondary))">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-              NA
-            </div>
-          </div>
-        </div>
-        <a href="https://github.com/NiloufarAhadi" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Niloufar Ahadi
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-      </div>
-      <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-        <div class="w-32 h-32 mb-4">
-          <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full shadow-lg border-4 border-white" 
-               style="background-image: url('/team/ramon-colmenares.jpg'), linear-gradient(135deg, var(--color-secondary), var(--color-primary))">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-primary)] flex items-center justify-center text-white font-bold text-xl [background-image:none]">
-              RC
-            </div>
-          </div>
-        </div>
-        <a href="https://github.com/RamonColmenares" target="_blank" rel="noopener noreferrer" 
-           class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-          Ramon Colmenares
-        </a>
-        <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
       </div>
     </div>
   </div>
@@ -266,5 +174,10 @@
   
   function scrollToFindings() {
     findingsSection.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function handleImageError(event) {
+    event.target.style.display = 'none';
+    event.target.nextElementSibling.style.display = 'flex';
   }
 </script>
