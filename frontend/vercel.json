@@ -1,7 +1,9 @@
 {
+  "framework": "svelte",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
+  "installCommand": "npm install",
   "env": {
-    "PUBLIC_API_URL": "https://your-backend.up.railway.app"
+    "PUBLIC_API_URL": "/api"
   }
 }
