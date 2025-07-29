@@ -15,7 +15,6 @@ Este directorio contiene todos los recursos estáticos del sitio web.
 - `gennadii-ershov.jpg` - Foto de Gennadii Ershov (cuadrada, min 300x300px)
 - `muhammad-shahroz.jpg` - Foto de Muhammad Shahroz (cuadrada, min 300x300px)
 - `muhammet-isik.jpg` - Foto de Muhammet Isik (cuadrada, min 300x300px)
-- `niloufar-ahadi.jpg` - Foto de Niloufar Ahadi (cuadrada, min 300x300px)
 - `ramon-colmenares.jpg` - Foto de Ramon Colmenares (cuadrada, min 300x300px)
 
 ### Página de Investigación (/research/)

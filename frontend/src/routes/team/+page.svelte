@@ -166,24 +166,6 @@
           </a>
           <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
         </div>
-
-        <!-- Niloufar Ahadi -->
-        <div class="card-container flex flex-col items-center text-center group hover:scale-105 transition-transform duration-300">
-          <div class="w-32 h-32 mb-4">
-            <img src="/team/niloufar-ahadi.jpg" alt="Niloufar Ahadi" 
-                 class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white"
-                 style="background: linear-gradient(135deg, var(--color-accent), var(--color-secondary))"
-                 on:error={handleImageError} />
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-xl" style="display: none;">
-              NA
-            </div>
-          </div>
-          <a href="https://github.com/NiloufarAhadi" target="_blank" rel="noopener noreferrer" 
-             class="text-lg font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] transition-colors mb-2">
-            Niloufar Ahadi
-          </a>
-          <p class="text-sm text-[var(--color-text-secondary)] font-medium">Researcher</p>
-        </div>
       </div>
 
       <!-- MIT Emerging Talent Support -->

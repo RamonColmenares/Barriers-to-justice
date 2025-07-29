@@ -88,11 +88,11 @@
       </div>
 
       <!-- Chart Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 gap-8">
         <!-- Representation Success Rate Chart -->
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-4">Success Rates by Representation Status</h3>
-          <div class="h-80" id="representationChart">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Success Rates by Representation Status</h3>
+          <div class="min-h-[500px] w-full" id="representationChart">
             <div class="flex items-center justify-center h-full bg-gray-50 rounded-lg">
               <div class="text-center">
                 <div class="w-16 h-16 bg-[var(--color-accent)] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -107,9 +107,9 @@
         </div>
 
         <!-- Timeline Trends Chart -->
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-4">Trends Over Time</h3>
-          <div class="h-80" id="timelineChart">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Trends Over Time</h3>
+          <div class="min-h-[500px] w-full" id="timelineChart">
             <div class="flex items-center justify-center h-full bg-gray-50 rounded-lg">
               <div class="text-center">
                 <div class="w-16 h-16 bg-[var(--color-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -124,9 +124,9 @@
         </div>
 
         <!-- Demographics Breakdown Chart -->
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-4">Outcomes by Age Group</h3>
-          <div class="h-80" id="demographicsChart">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Outcomes by Age Group</h3>
+          <div class="min-h-[500px] w-full" id="demographicsChart">
             <div class="flex items-center justify-center h-full bg-gray-50 rounded-lg">
               <div class="text-center">
                 <div class="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -141,33 +141,14 @@
         </div>
 
         <!-- Top Countries Chart -->
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-4">Top Countries by Case Volume</h3>
-          <div class="h-80" id="countriesChart">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Top Countries by Case Volume</h3>
+          <div class="min-h-[500px] w-full" id="countriesChart">
             <div class="flex items-center justify-center h-full bg-gray-50 rounded-lg">
               <div class="text-center">
                 <div class="w-16 h-16 bg-[var(--color-accent)] rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 1l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 1z"/>
-                  </svg>
-                </div>
-                <p class="text-[var(--color-text-secondary)]">Loading chart...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Courts Analysis Chart (Full Width) -->
-      <div class="mt-8">
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-4">Court Performance Analysis</h3>
-          <div class="h-96" id="courtsChart">
-            <div class="flex items-center justify-center h-full bg-gray-50 rounded-lg">
-              <div class="text-center">
-                <div class="w-16 h-16 bg-[var(--color-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 1z"/>
                   </svg>
                 </div>
                 <p class="text-[var(--color-text-secondary)]">Loading chart...</p>
@@ -233,14 +214,14 @@
   let isLoading = true;
   let error = null;
 
-  // Chart configuration
+  // Chart configuration for responsive behavior
   const chartConfig = {
     responsive: true,
     displayModeBar: false,
-    staticPlot: false
-  };
-
-  onMount(() => {
+    staticPlot: false,
+    useResizeHandler: true,
+    autosize: true
+  };  onMount(() => {
     // Initialize dashboard
     loadDashboard();
     
@@ -256,17 +237,16 @@
       // Load summary data first
       await loadSummaryData();
       
-      // Load all charts
+      // Load all charts with real notebook analysis
       await Promise.all([
-        loadRepresentationChart(),
+        loadRepresentationOutcomesChart(),
         loadTimeSeriesChart(),
-        loadOddsRatioChart(),
-        loadOutcomePercentagesChart(),
-        loadTrendsChart(),
-        loadDemographicsChart(),
-        loadCountriesChart(),
-        loadCourtsChart()
+        loadChiSquareResults(),
+        loadCountriesChart()
       ]);
+      
+      // Setup responsive behavior after all charts are loaded
+      finalizeCharts();
       
       isLoading = false;
     } catch (err) {
@@ -278,99 +258,214 @@
 
   async function loadSummaryData() {
     try {
-      const response = await fetch(`${API_BASE_URL}/cases/summary`);
+      const response = await fetch(`${API_BASE_URL}/overview`);
       if (!response.ok) throw new Error('Failed to load summary data');
       caseSummary = await response.json();
+      
+      // Update the key stats display
+      updateKeyStats();
     } catch (err) {
       console.error('Summary data error:', err);
       // Use fallback data
       caseSummary = {
         total_cases: 10000,
-        juvenile_cases: 3000,
         representation_rate: 35.0,
-        avg_days_to_resolution: 485
+        average_age: 12.5
       };
     }
   }
 
-  async function loadRepresentationChart() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/charts/representation`);
-      if (!response.ok) throw new Error('Failed to load representation chart');
-      
-      const data = await response.json();
-      
-      // Render chart using Plotly
-      if (window.Plotly) {
-        window.Plotly.newPlot('representationChart', data.chart.data, data.chart.layout, chartConfig);
-      }
-    } catch (err) {
-      console.error('Representation chart error:', err);
-      showChartError('representationChart', 'Failed to load representation chart');
+  function updateKeyStats() {
+    if (caseSummary) {
+      document.getElementById('stat-cases').textContent = `${Math.round(caseSummary.total_cases / 1000)}K+`;
+      document.getElementById('stat-representation').textContent = `${caseSummary.representation_rate}%`;
     }
   }
 
-  async function loadTrendsChart() {
+  async function loadRepresentationOutcomesChart() {
     try {
-      const response = await fetch(`${API_BASE_URL}/charts/trends`);
-      if (!response.ok) throw new Error('Failed to load trends chart');
+      const response = await fetch(`${API_BASE_URL}/findings/representation-outcomes`);
+      if (!response.ok) throw new Error('Failed to load representation outcomes chart');
       
-      const data = await response.json();
+      const plotlyConfig = await response.json();
       
+      // Update layout for responsive behavior
+      plotlyConfig.layout.autosize = true;
+      plotlyConfig.layout.width = undefined;
+      plotlyConfig.layout.height = 500;
+      
+      // Use the complete Plotly configuration from backend (identical to notebook)
       if (window.Plotly) {
-        window.Plotly.newPlot('timelineChart', data.chart.data, data.chart.layout, chartConfig);
+        await window.Plotly.newPlot('representationChart', plotlyConfig.data, plotlyConfig.layout, chartConfig);
+        // Add resize listener for this chart
+        window.addEventListener('resize', () => {
+          window.Plotly.Plots.resize('representationChart');
+        });
       }
     } catch (err) {
-      console.error('Trends chart error:', err);
-      showChartError('timelineChart', 'Failed to load trends chart');
+      console.error('Representation outcomes chart error:', err);
+      showChartError('representationChart', 'Failed to load representation outcomes chart');
     }
   }
 
-  async function loadDemographicsChart() {
+  async function loadTimeSeriesChart() {
     try {
-      const response = await fetch(`${API_BASE_URL}/charts/demographics`);
-      if (!response.ok) throw new Error('Failed to load demographics chart');
+      const response = await fetch(`${API_BASE_URL}/findings/time-series`);
+      if (!response.ok) throw new Error('Failed to load time series chart');
+      
+      const plotlyConfig = await response.json();
+      
+      // Update layout for responsive behavior
+      plotlyConfig.layout.autosize = true;
+      plotlyConfig.layout.width = undefined;
+      plotlyConfig.layout.height = 500;
+      
+      // Use the complete Plotly configuration from backend (identical to notebook)
+      if (window.Plotly) {
+        await window.Plotly.newPlot('timelineChart', plotlyConfig.data, plotlyConfig.layout, chartConfig);
+        // Add resize listener for this chart
+        window.addEventListener('resize', () => {
+          window.Plotly.Plots.resize('timelineChart');
+        });
+      }
+    } catch (err) {
+      console.error('Time series chart error:', err);
+      showChartError('timelineChart', 'Failed to load time series chart');
+    }
+  }
+
+  async function loadChiSquareResults() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/findings/chi-square`);
+      if (!response.ok) throw new Error('Failed to load chi-square analysis');
       
       const data = await response.json();
       
-      if (window.Plotly) {
-        window.Plotly.newPlot('demographicsChart', data.chart.data, data.chart.layout, chartConfig);
-      }
+      // Display chi-square results in a more visual format
+      const resultsHtml = `
+        <div class="space-y-6">
+          <!-- Key Finding Header -->
+          <div class="text-center mb-8">
+            <h4 class="text-2xl font-bold text-[var(--color-primary)] mb-2">Statistical Analysis Results</h4>
+            <p class="text-gray-600">Chi-square tests examine relationships between categorical variables</p>
+          </div>
+          
+          <!-- Policy Era Analysis -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+            <div class="flex items-center justify-between mb-4">
+              <h5 class="text-lg font-bold text-blue-800">📊 Representation by Policy Era</h5>
+              <span class="px-3 py-1 rounded-full text-sm font-medium ${data.representation_by_era.significant ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'}">
+                ${data.representation_by_era.significant ? '✓ Significant' : '✗ Not Significant'}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg text-blue-600">${data.representation_by_era.chi_square}</div>
+                <div class="text-gray-500">Chi-square</div>
+              </div>
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg text-blue-600">${data.representation_by_era.p_value.toExponential(2)}</div>
+                <div class="text-gray-500">p-value</div>
+              </div>
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg text-blue-600">${data.representation_by_era.cramer_v}</div>
+                <div class="text-gray-500">Cramer's V</div>
+              </div>
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg ${data.representation_by_era.significant ? 'text-red-600' : 'text-gray-400'}">${data.representation_by_era.significant ? 'YES' : 'NO'}</div>
+                <div class="text-gray-500">Significant</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Outcomes Analysis -->
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+            <div class="flex items-center justify-between mb-4">
+              <h5 class="text-lg font-bold text-green-800">⚖️ Outcomes by Representation</h5>
+              <span class="px-3 py-1 rounded-full text-sm font-medium ${data.outcomes_by_representation.significant ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'}">
+                ${data.outcomes_by_representation.significant ? '✓ Significant' : '✗ Not Significant'}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg text-green-600">${data.outcomes_by_representation.chi_square}</div>
+                <div class="text-gray-500">Chi-square</div>
+              </div>
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg text-green-600">${data.outcomes_by_representation.p_value.toExponential(2)}</div>
+                <div class="text-gray-500">p-value</div>
+              </div>
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg text-green-600">${data.outcomes_by_representation.cramer_v}</div>
+                <div class="text-gray-500">Cramer's V</div>
+              </div>
+              <div class="bg-white p-3 rounded-lg text-center">
+                <div class="font-bold text-lg text-green-600">${data.outcomes_by_representation.odds_ratio}x</div>
+                <div class="text-gray-500">Odds Ratio</div>
+              </div>
+            </div>
+            <!-- Key Insight -->
+            <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-r-lg">
+              <div class="flex items-center">
+                <div class="text-green-500 mr-3">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>
+                <p class="text-green-800 font-medium">
+                  Juveniles with legal representation are <strong>${data.outcomes_by_representation.odds_ratio}x more likely</strong> to achieve favorable outcomes
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Statistical Note -->
+          <div class="text-xs text-gray-500 text-center bg-gray-50 p-3 rounded-lg">
+            <strong>Note:</strong> Chi-square tests measure association strength. p-values < 0.05 indicate statistical significance. 
+            Cramer's V measures effect size: 0.1 (small), 0.3 (medium), 0.5 (large).
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('demographicsChart').innerHTML = resultsHtml;
+      
     } catch (err) {
-      console.error('Demographics chart error:', err);
-      showChartError('demographicsChart', 'Failed to load demographics chart');
+      console.error('Chi-square analysis error:', err);
+      showChartError('demographicsChart', 'Failed to load statistical analysis');
     }
   }
 
   async function loadCountriesChart() {
     try {
-      const response = await fetch(`${API_BASE_URL}/charts/countries`);
+      const response = await fetch(`${API_BASE_URL}/overview`);
       if (!response.ok) throw new Error('Failed to load countries chart');
       
       const data = await response.json();
       
+      // Create chart from top nationalities data
+      const countries = Object.keys(data.top_nationalities).slice(0, 10);
+      const counts = Object.values(data.top_nationalities).slice(0, 10);
+      
+      const plotlyData = [{
+        x: countries,
+        y: counts,
+        type: 'bar',
+        marker: { color: '#F59E0B' }
+      }];
+
+      const layout = {
+        title: 'Top Countries by Case Volume',
+        xaxis: { title: 'Country' },
+        yaxis: { title: 'Number of Cases' },
+        margin: { t: 50, l: 60, r: 30, b: 100 }
+      };
+      
       if (window.Plotly) {
-        window.Plotly.newPlot('countriesChart', data.chart.data, data.chart.layout, chartConfig);
+        window.Plotly.newPlot('countriesChart', plotlyData, layout, chartConfig);
       }
     } catch (err) {
       console.error('Countries chart error:', err);
       showChartError('countriesChart', 'Failed to load countries chart');
-    }
-  }
-
-  async function loadCourtsChart() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/charts/courts`);
-      if (!response.ok) throw new Error('Failed to load courts chart');
-      
-      const data = await response.json();
-      
-      if (window.Plotly) {
-        window.Plotly.newPlot('courtsChart', data.chart.data, data.chart.layout, chartConfig);
-      }
-    } catch (err) {
-      console.error('Courts chart error:', err);
-      showChartError('courtsChart', 'Failed to load courts chart');
     }
   }
 
@@ -398,28 +493,8 @@
     isLoading = true;
     
     try {
-      // Build query parameters
-      const params = new URLSearchParams();
-      if (filters.startDate) params.append('start_date', filters.startDate);
-      if (filters.endDate) params.append('end_date', filters.endDate);
-      if (filters.court && filters.court !== 'all') params.append('court', filters.court);
-      if (filters.representation && filters.representation !== 'all') {
-        if (filters.representation === 'represented') params.append('representation', 'Represented');
-        if (filters.representation === 'unrepresented') params.append('representation', 'Pro Se');
-      }
-      if (filters.ageGroup && filters.ageGroup !== 'all') params.append('age_group', filters.ageGroup);
-      
-      const queryString = params.toString();
-      
-      // Reload all charts with filters
-      await Promise.all([
-        loadRepresentationChartWithFilters(queryString),
-        loadTrendsChartWithFilters(queryString),
-        loadDemographicsChartWithFilters(queryString),
-        loadCountriesChartWithFilters(queryString),
-        loadCourtsChartWithFilters(queryString)
-      ]);
-      
+      // For now, just reload the dashboard
+      await loadDashboard();
       isLoading = false;
     } catch (err) {
       console.error('Error updating dashboard:', err);
@@ -428,111 +503,47 @@
     }
   }
 
-  async function loadRepresentationChartWithFilters(queryString) {
-    const response = await fetch(`${API_BASE_URL}/charts/representation?${queryString}`);
-    if (!response.ok) throw new Error('Failed to load representation chart');
-    
-    const data = await response.json();
-    if (window.Plotly) {
-      window.Plotly.react('representationChart', data.chart.data, data.chart.layout, chartConfig);
-    }
-  }
-
-  async function loadTrendsChartWithFilters(queryString) {
-    const response = await fetch(`${API_BASE_URL}/charts/trends?${queryString}`);
-    if (!response.ok) throw new Error('Failed to load trends chart');
-    
-    const data = await response.json();
-    if (window.Plotly) {
-      window.Plotly.react('timelineChart', data.chart.data, data.chart.layout, chartConfig);
-    }
-  }
-
-  async function loadDemographicsChartWithFilters(queryString) {
-    const response = await fetch(`${API_BASE_URL}/charts/demographics?${queryString}`);
-    if (!response.ok) throw new Error('Failed to load demographics chart');
-    
-    const data = await response.json();
-    if (window.Plotly) {
-      window.Plotly.react('demographicsChart', data.chart.data, data.chart.layout, chartConfig);
-    }
-  }
-
-  async function loadCountriesChartWithFilters(queryString) {
-    const response = await fetch(`${API_BASE_URL}/charts/countries?${queryString}`);
-    if (!response.ok) throw new Error('Failed to load countries chart');
-    
-    const data = await response.json();
-    if (window.Plotly) {
-      window.Plotly.react('countriesChart', data.chart.data, data.chart.layout, chartConfig);
-    }
-  }
-
-  async function loadCourtsChartWithFilters(queryString) {
-    const response = await fetch(`${API_BASE_URL}/charts/courts?${queryString}`);
-    if (!response.ok) throw new Error('Failed to load courts chart');
-    
-    const data = await response.json();
-    if (window.Plotly) {
-      window.Plotly.react('courtsChart', data.chart.data, data.chart.layout, chartConfig);
-    }
-  }
-
-  async function loadTimeSeriesChart() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/charts/time-series`);
-      if (!response.ok) throw new Error('Failed to load time series chart');
-      
-      const data = await response.json();
-      
-      if (window.Plotly) {
-        window.Plotly.newPlot('timeSeriesChart', data.chart.data, data.chart.layout, chartConfig);
-      }
-    } catch (err) {
-      console.error('Time series chart error:', err);
-      showChartError('timeSeriesChart', 'Failed to load time series chart');
-    }
-  }
-
-  async function loadOddsRatioChart() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/charts/odds-ratio`);
-      if (!response.ok) throw new Error('Failed to load odds ratio chart');
-      
-      const data = await response.json();
-      
-      if (window.Plotly) {
-        window.Plotly.newPlot('oddsRatioChart', data.chart.data, data.chart.layout, chartConfig);
-      }
-    } catch (err) {
-      console.error('Odds ratio chart error:', err);
-      showChartError('oddsRatioChart', 'Failed to load odds ratio chart');
-    }
-  }
-
-  async function loadOutcomePercentagesChart() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/charts/outcome-percentages`);
-      if (!response.ok) throw new Error('Failed to load outcome percentages chart');
-      
-      const data = await response.json();
-      
-      if (window.Plotly) {
-        window.Plotly.newPlot('outcomePercentagesChart', data.chart.data, data.chart.layout, chartConfig);
-      }
-    } catch (err) {
-      console.error('Outcome percentages chart error:', err);
-      showChartError('outcomePercentagesChart', 'Failed to load outcome percentages chart');
-    }
-  }
-
   function getFilterValues() {
     return {
-      startDate: document.getElementById('startDateFilter')?.value || '',
-      endDate: document.getElementById('endDateFilter')?.value || '',
-      court: document.getElementById('courtFilter')?.value || 'all',
+      timePeriod: document.getElementById('timePeriodFilter')?.value || 'all',
       representation: document.getElementById('representationFilter')?.value || 'all',
-      ageGroup: document.getElementById('ageGroupFilter')?.value || 'all'
+      caseType: document.getElementById('caseTypeFilter')?.value || 'all'
     };
+  }
+
+  function setupChartResizing() {
+    // Setup ResizeObserver for automatic chart resizing
+    if (window.ResizeObserver && window.Plotly) {
+      const chartContainers = ['representationChart', 'timelineChart', 'demographicsChart', 'countriesChart'];
+      
+      chartContainers.forEach(chartId => {
+        const container = document.getElementById(chartId);
+        if (container) {
+          const resizeObserver = new ResizeObserver(() => {
+            if (window.Plotly && window.Plotly.Plots) {
+              window.Plotly.Plots.resize(chartId);
+            }
+          });
+          resizeObserver.observe(container);
+        }
+      });
+    }
+  }
+
+  // Call this after all charts are loaded
+  function finalizeCharts() {
+    setupChartResizing();
+    
+    // Force resize all charts after a short delay to ensure they fit their containers
+    setTimeout(() => {
+      if (window.Plotly && window.Plotly.Plots) {
+        ['representationChart', 'timelineChart', 'demographicsChart', 'countriesChart'].forEach(chartId => {
+          const container = document.getElementById(chartId);
+          if (container) {
+            window.Plotly.Plots.resize(chartId);
+          }
+        });
+      }
+    }, 500);
   }
 </script>
