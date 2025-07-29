@@ -15,7 +15,9 @@ const config = {
 
   kit: {
     // adapter-vercel optimizes the app for deployment to Vercel
-    adapter: adapter(),
+    adapter: adapter({
+      runtime: 'nodejs20.x'
+    }),
   },
 };
 
