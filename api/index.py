@@ -1,13 +1,9 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
 import json
 import os
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.utils import PlotlyJSONEncoder
+from datetime import datetime
+import random
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -15,49 +11,54 @@ CORS(app)  # Enable CORS for all routes
 # Configuration
 app.config['DEBUG'] = False
 
-# Sample data generator for demonstration
-def load_real_data():
-    """Load real immigration data from the analysis datasets"""
-    try:
-        print("🔄 Loading real juvenile immigration datasets...")
-        
-        # Vercel doesn't support file mounting, so we'll use sample data
-        # In production, you'd use a database or external storage
-        print("⚠️  Using sample data - connect to database for production")
-        return generate_sample_data()
-        
-    except Exception as e:
-        print(f"❌ Error loading data: {e}")
-        return generate_sample_data()
-
 def generate_sample_data():
     """Generate sample data for demonstration"""
-    np.random.seed(42)
+    random.seed(42)
     
-    # Sample juvenile cases
-    n_cases = 1000
-    juvenile_cases = pd.DataFrame({
-        'IDNCASE': range(1, n_cases + 1),
-        'NAT': np.random.choice(['Mexico', 'Guatemala', 'El Salvador', 'Honduras', 'Other'], n_cases),
-        'LANG': np.random.choice(['Spanish', 'English', 'Other'], n_cases, p=[0.7, 0.2, 0.1]),
-        'CUSTODY': np.random.choice(['Released', 'Detained'], n_cases, p=[0.6, 0.4]),
-        'CASE_TYPE': np.random.choice(['Removal', 'Asylum', 'Other'], n_cases, p=[0.5, 0.3, 0.2]),
-        'Sex': np.random.choice(['M', 'F'], n_cases),
-        'AGE_AT_ENTRY': np.random.randint(5, 18, n_cases),
-        'LATEST_HEARING': pd.date_range('2020-01-01', '2024-12-31', periods=n_cases),
-        'DATE_OF_ENTRY': pd.date_range('2018-01-01', '2024-01-01', periods=n_cases),
-    })
+    # Sample data without heavy dependencies
+    nationalities = ['Mexico', 'Guatemala', 'El Salvador', 'Honduras', 'Other']
+    languages = ['Spanish', 'English', 'Other']
+    custody_types = ['Released', 'Detained']
+    case_types = ['Removal', 'Asylum', 'Other']
     
-    # Sample representation data
-    n_reps = 800
-    reps_assigned = pd.DataFrame({
-        'IDNREPSASSIGNED': range(1, n_reps + 1),
-        'IDNCASE': np.random.choice(juvenile_cases['IDNCASE'], n_reps),
-        'STRATTYLEVEL': np.random.choice(['Pro Bono', 'Legal Aid', 'Private', 'None'], n_reps, p=[0.3, 0.3, 0.2, 0.2]),
-        'STRATTYTYPE': np.random.choice(['Attorney', 'Accredited Rep', 'None'], n_reps, p=[0.6, 0.2, 0.2]),
-    })
+    # Generate simple statistics
+    total_cases = 1000
+    sample_data = {
+        'total_cases': total_cases,
+        'nationalities': {
+            'Mexico': 350,
+            'Guatemala': 200,
+            'El Salvador': 180,
+            'Honduras': 150,
+            'Other': 120
+        },
+        'languages': {
+            'Spanish': 700,
+            'English': 200,
+            'Other': 100
+        },
+        'custody': {
+            'Released': 600,
+            'Detained': 400
+        },
+        'case_types': {
+            'Removal': 500,
+            'Asylum': 300,
+            'Other': 200
+        },
+        'gender': {
+            'M': 520,
+            'F': 480
+        },
+        'representation': {
+            'Pro Bono': 300,
+            'Legal Aid': 300,
+            'Private': 200,
+            'None': 200
+        }
+    }
     
-    return juvenile_cases, reps_assigned
+    return sample_data
 
 @app.route('/api/health')
 def health():
@@ -73,35 +74,41 @@ def health():
 def get_overview():
     """Get overview statistics"""
     try:
-        juvenile_cases, reps_assigned = load_real_data()
+        sample_data = generate_sample_data()
         
-        # Calculate overview statistics
-        total_cases = len(juvenile_cases)
-        avg_age = juvenile_cases['AGE_AT_ENTRY'].mean()
-        representation_rate = (len(reps_assigned[reps_assigned['STRATTYTYPE'] != 'None']) / total_cases) * 100
-        
-        # Top nationalities
-        top_nationalities = juvenile_cases['NAT'].value_counts().head(5).to_dict()
-        
-        # Case outcomes by representation
-        cases_with_rep = juvenile_cases[juvenile_cases['IDNCASE'].isin(
-            reps_assigned[reps_assigned['STRATTYTYPE'] != 'None']['IDNCASE']
-        )]
+        # Calculate representation rate
+        total_with_rep = (sample_data['representation']['Pro Bono'] + 
+                         sample_data['representation']['Legal Aid'] + 
+                         sample_data['representation']['Private'])
+        representation_rate = (total_with_rep / sample_data['total_cases']) * 100
         
         overview_data = {
-            "total_cases": int(total_cases),
-            "average_age": round(float(avg_age), 1),
-            "representation_rate": round(float(representation_rate), 1),
-            "top_nationalities": top_nationalities,
+            "total_cases": sample_data['total_cases'],
+            "average_age": 12.5,  # Static average for demo
+            "representation_rate": round(representation_rate, 1),
+            "top_nationalities": sample_data['nationalities'],
             "demographic_breakdown": {
-                "by_gender": juvenile_cases['Sex'].value_counts().to_dict(),
-                "by_custody": juvenile_cases['CUSTODY'].value_counts().to_dict(),
-                "by_case_type": juvenile_cases['CASE_TYPE'].value_counts().to_dict()
+                "by_gender": sample_data['gender'],
+                "by_custody": sample_data['custody'],
+                "by_case_type": sample_data['case_types']
             },
+            "representation_breakdown": sample_data['representation'],
+            "language_breakdown": sample_data['languages'],
             "trends": {
-                "monthly_cases": juvenile_cases.groupby(
-                    juvenile_cases['DATE_OF_ENTRY'].dt.to_period('M')
-                ).size().tail(12).to_dict()
+                "monthly_cases": {
+                    "2024-01": 85,
+                    "2024-02": 92,
+                    "2024-03": 78,
+                    "2024-04": 88,
+                    "2024-05": 95,
+                    "2024-06": 82,
+                    "2024-07": 89,
+                    "2024-08": 91,
+                    "2024-09": 87,
+                    "2024-10": 93,
+                    "2024-11": 85,
+                    "2024-12": 88
+                }
             }
         }
         
@@ -110,11 +117,13 @@ def get_overview():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Export for Vercel
+# Vercel serverless function handler
 def handler(request, context):
     """Vercel handler function"""
-    return app(request.environ)
+    with app.app_context():
+        return app.full_dispatch_request()
 
+# For local development
 if __name__ == '__main__':
     print("🚀 Starting development server...")
     print("🌐 Backend running on http://localhost:5000")
