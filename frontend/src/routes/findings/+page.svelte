@@ -284,7 +284,7 @@
 
   async function loadRepresentationOutcomesChart() {
     try {
-      const response = await fetch(`${API_BASE_URL}/findings/representation-outcomes`);
+      const response = await fetch(`${API_BASE_URL}/findings/outcome-percentages`);
       if (!response.ok) throw new Error('Failed to load representation outcomes chart');
       
       const plotlyConfig = await response.json();
