@@ -104,12 +104,16 @@
             <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Cleaned</span>
           </div>
           <div class="flex gap-3">
-            <button class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] transition-colors flex-1">
+            <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
+               target="_blank" 
+               class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] transition-colors flex-1 text-center">
               Download Dataset
-            </button>
-            <button class="border border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-md hover:bg-[var(--color-primary)] hover:text-white transition-colors">
+            </a>
+            <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
+               target="_blank" 
+               class="border border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-md hover:bg-[var(--color-primary)] hover:text-white transition-colors text-center">
               View Documentation
-            </button>
+            </a>
           </div>
         </div>
 
@@ -139,12 +143,16 @@
             <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Pandas</span>
           </div>
           <div class="flex gap-3">
-            <button class="bg-[var(--color-secondary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary)] transition-colors flex-1">
+            <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/4_data_analysis/4_data_analysis.ipynb" 
+               target="_blank" 
+               class="bg-[var(--color-secondary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary)] transition-colors flex-1 text-center">
               View on GitHub
-            </button>
-            <button class="border border-[var(--color-secondary)] text-[var(--color-secondary)] px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] hover:text-white transition-colors">
+            </a>
+            <a href="https://colab.research.google.com/github/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/4_data_analysis/4_data_analysis.ipynb" 
+               target="_blank" 
+               class="border border-[var(--color-secondary)] text-[var(--color-secondary)] px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] hover:text-white transition-colors text-center">
               Run in Colab
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -168,9 +176,11 @@
                 Processed EOIR juvenile immigration case data with demographic information and outcomes.
               </p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
+                   target="_blank" 
+                   class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
-                </button>
+                </a>
                 <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
                   Preview
                 </button>
@@ -186,9 +196,11 @@
                 Attorney representation records linked to juvenile cases and outcomes.
               </p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
+                   target="_blank" 
+                   class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
-                </button>
+                </a>
                 <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
                   Preview
                 </button>
@@ -204,9 +216,11 @@
                 Case processing timelines, hearing dates, and decision milestones.
               </p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
+                   target="_blank" 
+                   class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
-                </button>
+                </a>
                 <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
                   Preview
                 </button>
@@ -222,9 +236,11 @@
                 Lookup tables for case codes, decision types, and geographical data.
               </p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
+                   target="_blank" 
+                   class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
-                </button>
+                </a>
                 <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
                   Preview
                 </button>
@@ -246,9 +262,11 @@
                 Complete data preprocessing and cleaning scripts for EOIR datasets.
               </p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo" 
+                   target="_blank" 
+                   class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   GitHub
-                </button>
+                </a>
                 <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
                   Docs
                 </button>
@@ -264,9 +282,11 @@
                 Comprehensive statistical analysis and hypothesis testing scripts.
               </p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo" 
+                   target="_blank" 
+                   class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   GitHub
-                </button>
+                </a>
                 <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
                   Docs
                 </button>
@@ -282,9 +302,11 @@
                 Interactive dashboard components and chart generation tools.
               </p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo" 
+                   target="_blank" 
+                   class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   GitHub
-                </button>
+                </a>
                 <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
                   Demo
                 </button>
@@ -422,13 +444,26 @@
             <h3 class="text-xl font-bold text-[var(--color-primary)] mb-4">Installation</h3>
             <div class="bg-gray-900 rounded-lg p-4 text-white text-sm">
               <pre><code># Clone the repository
-git clone https://github.com/barriers-to-justice/analysis
+git clone https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo
 
-# Install dependencies
+# Navigate to project directory
+cd ET6-CDSP-group-19-repo
+
+# Install dependencies for data analysis
+cd 4_data_analysis
 pip install -r requirements.txt
 
-# Start Jupyter
-jupyter notebook analysis.ipynb</code></pre>
+# Start Jupyter (multiple notebooks available)
+jupyter notebook
+
+# Main analysis notebook:
+# 4_data_analysis.ipynb</code></pre>
+            </div>
+            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p class="text-sm text-blue-800">
+                <strong>Note:</strong> Each notebook directory contains its own requirements. 
+                Install dependencies separately for each analysis you want to run.
+              </p>
             </div>
           </div>
         </div>
