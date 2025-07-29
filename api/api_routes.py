@@ -13,6 +13,7 @@ try:
         generate_chi_square_analysis,
         generate_outcome_percentages_chart
     )
+    from .basic_stats import get_basic_statistics
     from .models import cache
 except ImportError:
     from data_loader import load_data, download_raw_files_from_google_drive, save_to_cache
@@ -23,6 +24,7 @@ except ImportError:
         generate_chi_square_analysis,
         generate_outcome_percentages_chart
     )
+    from basic_stats import get_basic_statistics
     from models import cache
 
 def health():
@@ -203,6 +205,22 @@ def outcome_percentages():
             return jsonify(chart_data), 500
         
         return chart_data
+        
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+def basic_statistics():
+    """Get basic statistics for the data page"""
+    try:
+        # Load data if needed
+        if not load_data():
+            return jsonify({"error": "Failed to load or process data"}), 500
+        
+        stats = get_basic_statistics()
+        if "error" in stats:
+            return jsonify(stats), 500
+        
+        return jsonify(stats)
         
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500

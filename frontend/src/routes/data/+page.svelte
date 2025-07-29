@@ -106,21 +106,21 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-[var(--color-accent)] transform hover:scale-105 transition-transform duration-300">
           <div class="text-center">
-            <div class="text-5xl font-bold text-[var(--color-accent)] mb-2">45.3%</div>
+            <div class="text-5xl font-bold text-[var(--color-accent)] mb-2" id="success-with-rep">45.3%</div>
             <div class="text-lg font-semibold text-[var(--color-primary)] mb-2">Success Rate</div>
             <div class="text-sm text-[var(--color-text-secondary)]">With legal representation</div>
           </div>
         </div>
         <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-[var(--color-secondary)] transform hover:scale-105 transition-transform duration-300">
           <div class="text-center">
-            <div class="text-5xl font-bold text-[var(--color-secondary)] mb-2">0.8%</div>
+            <div class="text-5xl font-bold text-[var(--color-secondary)] mb-2" id="success-without-rep">0.8%</div>
             <div class="text-lg font-semibold text-[var(--color-primary)] mb-2">Success Rate</div>
             <div class="text-sm text-[var(--color-text-secondary)]">Without representation</div>
           </div>
         </div>
         <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-[var(--color-primary)] transform hover:scale-105 transition-transform duration-300">
           <div class="text-center">
-            <div class="text-5xl font-bold text-[var(--color-primary)] mb-2">75%</div>
+            <div class="text-5xl font-bold text-[var(--color-primary)] mb-2" id="barriers-stat">75%</div>
             <div class="text-lg font-semibold text-[var(--color-primary)] mb-2">Face Barriers</div>
             <div class="text-sm text-[var(--color-text-secondary)]">To accessing legal aid</div>
           </div>
@@ -269,3 +269,92 @@
     </div>
   </section>
 </main>
+
+<script>
+  import { onMount } from 'svelte';
+  import { env } from '$env/dynamic/public';
+
+  // API Configuration
+  const API_BASE_URL = env.PUBLIC_API_URL || 'http://localhost:5000/api';
+
+  // Data stores
+  let caseSummary = null;
+  let representationOutcomes = null;
+  let isLoading = true;
+  let error = null;
+
+  onMount(() => {
+    loadDataStatistics();
+  });
+
+  async function loadDataStatistics() {
+    isLoading = true;
+    error = null;
+    
+    try {
+      // Load both overview data and basic statistics
+      await Promise.all([
+        loadOverviewData(),
+        loadBasicStats()
+      ]);
+      
+      // Update the statistics display
+      updateStatistics();
+      
+      isLoading = false;
+    } catch (err) {
+      console.error('Error loading data statistics:', err);
+      error = err.message;
+      isLoading = false;
+      
+      // Keep fallback values if API fails
+      useFallbackValues();
+    }
+  }
+
+  async function loadOverviewData() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/overview`);
+      if (!response.ok) throw new Error('Failed to load overview data');
+      caseSummary = await response.json();
+    } catch (err) {
+      console.error('Overview data error:', err);
+      throw err;
+    }
+  }
+
+  async function loadBasicStats() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/data/basic-stats`);
+      if (!response.ok) throw new Error('Failed to load basic statistics');
+      representationOutcomes = await response.json();
+    } catch (err) {
+      console.error('Basic statistics error:', err);
+      throw err;
+    }
+  }
+
+  function updateStatistics() {
+    if (representationOutcomes) {
+      // Update success rates with real data
+      if (representationOutcomes.success_with_representation !== undefined) {
+        document.getElementById('success-with-rep').textContent = `${representationOutcomes.success_with_representation}%`;
+      }
+      
+      if (representationOutcomes.success_without_representation !== undefined) {
+        document.getElementById('success-without-rep').textContent = `${representationOutcomes.success_without_representation}%`;
+      }
+      
+      if (representationOutcomes.barriers_percentage !== undefined) {
+        document.getElementById('barriers-stat').textContent = `${representationOutcomes.barriers_percentage}%`;
+      }
+    }
+  }
+
+  function useFallbackValues() {
+    // Keep the original hardcoded values if API fails
+    document.getElementById('success-with-rep').textContent = '45.3%';
+    document.getElementById('success-without-rep').textContent = '0.8%';
+    document.getElementById('barriers-stat').textContent = '75%';
+  }
+</script>

@@ -16,7 +16,8 @@ try:
         representation_outcomes,
         time_series_analysis,
         chi_square_analysis,
-        outcome_percentages
+        outcome_percentages,
+        basic_statistics
     )
     from .config import DEBUG
 except ImportError:
@@ -29,7 +30,8 @@ except ImportError:
         representation_outcomes,
         time_series_analysis,
         chi_square_analysis,
-        outcome_percentages
+        outcome_percentages,
+        basic_statistics
     )
     from config import DEBUG
 
@@ -75,6 +77,10 @@ def chi_square_route():
 @app.route('/api/findings/outcome-percentages')
 def outcome_percentages_route():
     return outcome_percentages()
+
+@app.route('/api/data/basic-stats')
+def basic_statistics_route():
+    return basic_statistics()
 
 # Vercel serverless function handler
 def handler(request, context):
