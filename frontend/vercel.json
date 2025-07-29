@@ -1,16 +1,6 @@
 {
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
   "env": {
     "PUBLIC_API_URL": "https://your-backend.up.railway.app"
   }
