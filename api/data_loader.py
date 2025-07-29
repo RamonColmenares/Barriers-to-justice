@@ -234,64 +234,166 @@ def save_to_cache():
         return False
 
 def download_from_google_drive(file_id, is_gzipped=True):
-    """Download a file from Google Drive using its file ID"""
+    """Download a file from Google Drive using its file ID with virus scan handling"""
     try:
         print(f"  🌐 Downloading file {file_id}...")
         
-        # Try multiple URLs for Google Drive downloads
-        urls = [
-            f"https://drive.google.com/uc?id={file_id}&export=download",
-            f"https://drive.google.com/uc?export=download&id={file_id}",
-            f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
-        ]
-        
         session = requests.Session()
         session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
         
-        response = None
-        for url_attempt, url in enumerate(urls):
+        # Try multiple URL patterns for Google Drive downloads
+        download_urls = [
+            # Standard download URL
+            f"https://drive.google.com/uc?id={file_id}&export=download",
+            # Alternative with confirm parameter
+            f"https://drive.google.com/uc?id={file_id}&export=download&confirm=t",
+            # Google Drive content URL with authuser
+            f"https://drive.usercontent.google.com/download?id={file_id}&export=download&authuser=0&confirm=t",
+            # Docs URL
+            f"https://docs.google.com/uc?export=download&id={file_id}",
+        ]
+        
+        for url_idx, download_url in enumerate(download_urls):
             try:
-                print(f"    Trying URL {url_attempt + 1}...")
-                response = session.get(url, stream=True, timeout=60)
+                print(f"    Trying URL {url_idx + 1}...")
+                response = session.get(download_url, stream=True, timeout=120, allow_redirects=True)
                 response.raise_for_status()
                 
-                # Check if we got HTML instead of file content
                 content_type = response.headers.get('content-type', '').lower()
-                if 'text/html' in content_type and len(response.content) < 10000:
-                    print(f"    Got HTML response, size: {len(response.content)}")
-                    continue
+                content_length = len(response.content) if response.content else 0
+                
+                print(f"    Response: Content-Type={content_type}, Size={content_length}")
+                
+                # Check if we got the file directly
+                if 'text/html' not in content_type:
+                    # Not HTML, likely the file
+                    if is_gzipped and response.content.startswith(b'\x1f\x8b'):
+                        print(f"  ✅ Downloaded gzipped file successfully")
+                        return response.content
+                    elif not is_gzipped and content_length > 100:
+                        print(f"  ✅ Downloaded file successfully")
+                        return response.content
+                
+                # If we got HTML, check if it's a virus scan confirmation page
+                if 'text/html' in content_type and content_length > 500:
+                    print(f"    Got HTML response, parsing for download links...")
+                    html_content = response.text
                     
-                # Valid response found
-                break
+                    # Look for the download confirmation link
+                    import re
+                    
+                    # Multiple patterns for Google Drive virus scan bypass
+                    patterns = [
+                        # Standard patterns
+                        r'href="(/uc\?export=download[^"]*)"',
+                        r'action="(/uc\?export=download[^"]*)"',
+                        # Drive content patterns
+                        r'https://drive\.usercontent\.google\.com/download\?id=' + file_id + r'[^"]*',
+                        # Confirm token patterns
+                        r'confirm=([a-zA-Z0-9\-_]+)',
+                        # UUID patterns
+                        r'uuid=([a-zA-Z0-9\-]+)',
+                        # AT token patterns
+                        r'at=([^"&\s]+)'
+                    ]
+                    
+                    # Try to extract and build a proper download URL
+                    confirm_match = re.search(r'confirm=([a-zA-Z0-9\-_]+)', html_content)
+                    uuid_match = re.search(r'uuid=([a-zA-Z0-9\-]+)', html_content)
+                    at_match = re.search(r'at=([^"&\s]+)', html_content)
+                    
+                    if confirm_match:
+                        confirm_token = confirm_match.group(1)
+                        print(f"    Found confirm token: {confirm_token[:10]}...")
+                        
+                        # Build enhanced URL with all parameters
+                        enhanced_url = f"https://drive.usercontent.google.com/download?id={file_id}&export=download&authuser=0&confirm={confirm_token}"
+                        
+                        if uuid_match:
+                            uuid_token = uuid_match.group(1)
+                            enhanced_url += f"&uuid={uuid_token}"
+                            print(f"    Found UUID: {uuid_token[:10]}...")
+                        
+                        if at_match:
+                            at_token = at_match.group(1)
+                            enhanced_url += f"&at={at_token}"
+                            print(f"    Found AT token: {at_token[:20]}...")
+                        
+                        print(f"    Trying enhanced URL...")
+                        
+                        # Try the enhanced URL
+                        response2 = session.get(enhanced_url, stream=True, timeout=120, allow_redirects=True)
+                        response2.raise_for_status()
+                        
+                        if response2.content and len(response2.content) > 1000:
+                            content_type2 = response2.headers.get('content-type', '').lower()
+                            if 'text/html' not in content_type2:
+                                print(f"  ✅ Enhanced URL download successful")
+                                return response2.content
+                    
+                    # Look for direct download links in HTML
+                    download_link_patterns = [
+                        r'href="(https://drive\.usercontent\.google\.com/download[^"]*)"',
+                        r'"downloadUrl":"([^"]*)"',
+                        r'action="([^"]*uc\?export=download[^"]*)"'
+                    ]
+                    
+                    for pattern in download_link_patterns:
+                        match = re.search(pattern, html_content)
+                        if match:
+                            found_url = match.group(1)
+                            if found_url.startswith('/'):
+                                found_url = 'https://drive.google.com' + found_url
+                            found_url = found_url.replace('\\u0026', '&').replace('&amp;', '&')
+                            
+                            print(f"    Found direct link: {found_url[:100]}...")
+                            
+                            try:
+                                response3 = session.get(found_url, stream=True, timeout=120, allow_redirects=True)
+                                response3.raise_for_status()
+                                
+                                if response3.content and len(response3.content) > 1000:
+                                    content_type3 = response3.headers.get('content-type', '').lower()
+                                    if 'text/html' not in content_type3:
+                                        print(f"  ✅ Direct link download successful")
+                                        return response3.content
+                            except:
+                                continue
+                
+                print(f"    URL {url_idx + 1} didn't provide valid file")
                 
             except Exception as e:
-                print(f"    URL {url_attempt + 1} failed: {e}")
+                print(f"    URL {url_idx + 1} failed: {e}")
                 continue
-                
-        if response is None or 'text/html' in response.headers.get('content-type', '').lower():
-            print(f"  ❌ All download attempts failed for {file_id}")
-            return None
         
-        # Return the raw content for saving to cache
-        print(f"  ✅ Downloaded {len(response.content)} bytes")
-        return response.content
+        print(f"  ❌ All download attempts failed for {file_id}")
+        return None
             
     except Exception as e:
         print(f"  ❌ Error downloading file {file_id}: {e}")
         return None
 
 def download_raw_files_from_google_drive():
-    """Download raw data files from Google Drive and save to cache directory"""
+    """Download raw data files from Google Drive and save to cache directory (skip existing files)"""
     try:
         cache_dir = get_cache_dir()
-        print("🌐 Downloading raw data files from Google Drive...")
+        print("🌐 Checking and downloading missing raw data files from Google Drive...")
         
         downloaded_count = 0
+        skipped_count = 0
         
-        # Download each file and save to cache
+        # Download each file and save to cache (only if not already exists)
         for file_key, filename in RAW_DATA_FILES.items():
+            file_path = os.path.join(cache_dir, filename)
+            
+            # Skip if file already exists
+            if os.path.exists(file_path):
+                print(f"📁 {filename} already exists in cache, skipping...")
+                skipped_count += 1
+                continue
+                
             if file_key in GOOGLE_DRIVE_FILES:
                 file_id = GOOGLE_DRIVE_FILES[file_key]
                 print(f"📊 Downloading {filename}...")
@@ -302,18 +404,17 @@ def download_raw_files_from_google_drive():
                 
                 if content is not None:
                     # Save raw file to cache directory
-                    file_path = os.path.join(cache_dir, filename)
                     with open(file_path, 'wb') as f:
                         f.write(content)
-                    print(f"  ✅ Saved {filename} to cache")
+                    print(f"  ✅ Saved {filename} to cache ({len(content)} bytes)")
                     downloaded_count += 1
                 else:
                     print(f"  ❌ Failed to download {filename}")
             else:
                 print(f"  ⚠️ No Google Drive ID found for {filename}")
         
-        print(f"📥 Downloaded {downloaded_count}/{len(RAW_DATA_FILES)} files")
-        return downloaded_count > 0
+        print(f"📥 Summary: {downloaded_count} downloaded, {skipped_count} skipped (already in cache)")
+        return (downloaded_count + skipped_count) > 0
         
     except Exception as e:
         print(f"❌ Error downloading files from Google Drive: {e}")
