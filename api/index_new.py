@@ -6,32 +6,18 @@ from flask import Flask
 from flask_cors import CORS
 
 # Import route handlers
-try:
-    from .api_routes import (
-        health,
-        get_overview,
-        load_data_endpoint,
-        force_reload_data,
-        data_status,
-        representation_outcomes,
-        time_series_analysis,
-        chi_square_analysis,
-        outcome_percentages
-    )
-    from .config import DEBUG
-except ImportError:
-    from api_routes import (
-        health,
-        get_overview,
-        load_data_endpoint,
-        force_reload_data,
-        data_status,
-        representation_outcomes,
-        time_series_analysis,
-        chi_square_analysis,
-        outcome_percentages
-    )
-    from config import DEBUG
+from .api_routes import (
+    health,
+    get_overview,
+    load_data_endpoint,
+    force_reload_data,
+    data_status,
+    representation_outcomes,
+    time_series_analysis,
+    chi_square_analysis,
+    outcome_percentages
+)
+from .config import DEBUG
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
