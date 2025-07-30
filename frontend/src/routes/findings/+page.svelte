@@ -205,8 +205,10 @@
 <script>
   import { onMount } from 'svelte';
 
-  // API Configuration - hardcoded for production
-  const API_BASE_URL = 'http://98.80.250.170:5000/api';
+  // API Configuration - use HTTPS for production
+  const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api'  // Development
+    : 'https://54.196.120.37/api';  // Production HTTPS
 
   // Data stores
   let caseSummary = null;

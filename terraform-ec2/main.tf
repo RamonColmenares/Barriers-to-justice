@@ -158,7 +158,7 @@ resource "aws_instance" "web" {
   user_data = <<-EOF
               #!/bin/bash
               apt-get update
-              apt-get install -y docker.io nginx
+              apt-get install -y docker.io nginx certbot python3-certbot-nginx
               systemctl start docker
               systemctl enable docker
               systemctl start nginx
@@ -169,13 +169,32 @@ resource "aws_instance" "web" {
               curl -L "https://github.com/docker/compose/releases/download/v2.21.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               chmod +x /usr/local/bin/docker-compose
               
-              # Configure Nginx as reverse proxy
+              # Configure Nginx as reverse proxy with SSL support
               cat > /etc/nginx/sites-available/default <<'NGINX_EOF'
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
+    
+    server_name _;
+    
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
 
     server_name _;
+
+    # Self-signed certificate (will be replaced by Let's Encrypt if domain is available)
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    
+    # Modern SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
 
     # API routes
     location /api/ {
@@ -212,11 +231,17 @@ server {
 
     # Default response for other routes
     location / {
-        return 200 'API is running. Use /api/ endpoints or /health for status.';
+        return 200 'API is running on HTTPS. Use /api/ endpoints or /health for status.';
         add_header Content-Type text/plain;
     }
 }
 NGINX_EOF
+
+              # Create self-signed certificate for immediate HTTPS
+              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout /etc/ssl/private/nginx-selfsigned.key \
+                -out /etc/ssl/certs/nginx-selfsigned.crt \
+                -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
 
               systemctl reload nginx
               EOF

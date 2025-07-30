@@ -82,7 +82,6 @@ fi
 
 # Wait for EC2 instance to be ready
 echo "⏳ Waiting for EC2 instance to be ready..."
-sleep 90
 
 # Copy files to EC2
 echo "📦 Deploying backend to EC2..."
@@ -108,7 +107,7 @@ ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o Connec
 # Wait for Docker to be ready
 timeout=300
 while ! docker ps >/dev/null 2>&1 && [ $timeout -gt 0 ]; do
-    echo "Waiting for Docker to start... ($timeout seconds remaining)"
+    echo "Waiting for Docker to start... $timeout seconds remaining"
     sleep 5
     timeout=$((timeout-5))
 done
@@ -153,10 +152,10 @@ if docker ps | grep -q juvenile-api; then
         echo "⚠️  Health endpoint not responding"
     fi
     
-    if curl -f -s http://localhost/health >/dev/null; then
-        echo "✓ Nginx proxy working"
+    if curl -f -s -k https://localhost/health >/dev/null; then
+        echo "✓ HTTPS proxy working"
     else
-        echo "⚠️  Nginx proxy not responding"
+        echo "⚠️  HTTPS proxy not responding"
     fi
     
     # Show container logs (last 10 lines)
@@ -175,10 +174,11 @@ if [ $? -eq 0 ]; then
     echo "🎉 DEPLOYMENT SUCCESSFUL!"
     echo ""
     echo "📡 API Endpoints:"
-    echo "   Health Check: http://$EC2_IP/health"
-    echo "   Overview:     http://$EC2_IP/api/overview"
-    echo "   Basic Stats:  http://$EC2_IP/api/data/basic-stats"
-    echo "   Findings:     http://$EC2_IP/api/findings/*"
+    echo "   Health Check: https://$EC2_IP/health"
+    echo "   Overview:     https://$EC2_IP/api/overview"
+    echo "   Basic Stats:  https://$EC2_IP/api/data/basic-stats"
+    echo "   Findings:     https://$EC2_IP/api/findings/*"
+    echo "   (Note: HTTPS uses self-signed certificate, you may need to accept the security warning)"
     echo ""
     
     if [ "$S3_BUCKET" != "null" ] && [ -n "$S3_BUCKET" ]; then
@@ -194,8 +194,6 @@ if [ $? -eq 0 ]; then
     echo "   SSH Access:   ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP"
     echo "   Docker Logs:  docker logs juvenile-api"
     echo "   Restart API:  docker restart juvenile-api"
-    echo ""
-    echo "💰 Free Tier: EC2 t2.micro gives you 750 hours/month for 12 months"
 else
     echo "❌ DEPLOYMENT FAILED!"
     echo "Check the logs above for details."
