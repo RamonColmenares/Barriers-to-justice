@@ -2,3 +2,13 @@
 */__pycache__/
 .venv
 api/cache/*
+
+# Deployment temporary files  
+build/
+api.zip
+terraform-ec2/.terraform/
+terraform-ec2/.terraform.lock.hcl
+terraform-ec2/tfplan
+terraform-ec2/terraform.tfstate*
+terraform-ec2/terraform.tfvars
+~/.ssh/juvenile-immigration-key.pem*
