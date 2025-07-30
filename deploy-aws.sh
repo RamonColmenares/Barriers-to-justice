@@ -71,9 +71,12 @@ cp requirements-lambda.txt build/requirements.txt
 echo "📦 Installing Python dependencies..."
 cd build
 
-# Use pip with specific options for Lambda
-pip install -r requirements.txt -t . --platform linux_x86_64 --only-binary=all --no-deps || \
-pip install -r requirements.txt -t .
+# Use pip with specific options for Lambda - try multiple approaches
+echo "🔧 Attempting platform-specific installation..."
+pip install -r requirements.txt -t . --platform linux_x86_64 --only-binary=all --upgrade --no-deps || {
+    echo "⚠️  Platform-specific install failed, trying generic install..."
+    pip install -r requirements.txt -t . --upgrade
+}
 
 # Remove unnecessary files to reduce size
 echo "🧹 Optimizing package size..."

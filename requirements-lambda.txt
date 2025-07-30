@@ -8,5 +8,5 @@ plotly==5.18.0
 requests==2.31.0
 
 # AWS Lambda specific
-awsgi==0.2.7
+awsgi==0.2.6
 boto3==1.34.0
