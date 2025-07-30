@@ -120,6 +120,14 @@ resource "aws_security_group" "web" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Flask API port
+  ingress {
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # All outbound traffic
   egress {
     from_port   = 0
@@ -142,7 +150,7 @@ resource "aws_key_pair" "main" {
 # Launch EC2 instance
 resource "aws_instance" "web" {
   ami                    = var.ubuntu_ami_id
-  instance_type          = "t2.micro"  # Free tier eligible
+  instance_type          = "t3.small"  # 2GB RAM - mejor para compilar dependencias
   key_name               = aws_key_pair.main.key_name
   vpc_security_group_ids = [aws_security_group.web.id]
   subnet_id              = aws_subnet.public.id

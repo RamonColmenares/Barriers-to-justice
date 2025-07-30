@@ -1,5 +1,5 @@
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-static';
 import preprocess from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -14,10 +14,15 @@ const config = {
   ],
 
   kit: {
-    // adapter-vercel optimizes the app for deployment to Vercel
+    // adapter-static generates static files for S3/CDN deployment
     adapter: adapter({
-      runtime: 'nodejs20.x'
+      fallback: 'index.html',
+      precompress: false,
+      strict: false
     }),
+    prerender: {
+      handleHttpError: 'warn'
+    },
   },
 };
 

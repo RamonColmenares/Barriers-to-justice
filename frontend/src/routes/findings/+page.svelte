@@ -204,10 +204,9 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { env } from '$env/dynamic/public';
 
-  // API Configuration
-  const API_BASE_URL = env.PUBLIC_API_URL || 'http://localhost:5000/api';
+  // API Configuration - hardcoded for production
+  const API_BASE_URL = 'http://98.80.250.170:5000/api';
 
   // Data stores
   let caseSummary = null;
@@ -221,12 +220,17 @@
     staticPlot: false,
     useResizeHandler: true,
     autosize: true
-  };  onMount(() => {
+  };
+
+  onMount(() => {
     // Initialize dashboard
     loadDashboard();
     
     // Add event listeners for filters
     document.getElementById('updateDashboard')?.addEventListener('click', updateDashboard);
+    
+    // Make retry function globally available for error buttons
+    window.retryDataLoad = retryDataLoad;
   });
 
   async function loadDashboard() {
@@ -253,6 +257,15 @@
       console.error('Error loading dashboard:', err);
       error = err.message;
       isLoading = false;
+    }
+  }
+
+  async function retryDataLoad() {
+    try {
+      await loadDashboard();
+    } catch (err) {
+      console.error('Retry failed:', err);
+      error = 'Failed to reload data. Please check your connection.';
     }
   }
 
@@ -472,7 +485,7 @@
             </svg>
           </div>
           <p class="text-red-600 text-sm">${message}</p>
-          <button onclick="location.reload()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+          <button onclick="retryDataLoad()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
             Retry
           </button>
         </div>

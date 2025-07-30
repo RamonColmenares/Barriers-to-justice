@@ -272,10 +272,9 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { env } from '$env/dynamic/public';
 
-  // API Configuration
-  const API_BASE_URL = env.PUBLIC_API_URL || 'http://localhost:5000/api';
+  // API Configuration - hardcoded for production
+  const API_BASE_URL = 'http://98.80.250.170:5000/api';
 
   // Data stores
   let caseSummary = null;
