@@ -17,6 +17,7 @@ try:
         time_series_analysis,
         chi_square_analysis,
         outcome_percentages,
+        countries_chart,
         basic_statistics
     )
     from .config import DEBUG
@@ -31,6 +32,7 @@ except ImportError:
         time_series_analysis,
         chi_square_analysis,
         outcome_percentages,
+        countries_chart,
         basic_statistics
     )
     from config import DEBUG
@@ -77,6 +79,10 @@ def chi_square_route():
 @app.route('/api/findings/outcome-percentages')
 def outcome_percentages_route():
     return outcome_percentages()
+
+@app.route('/api/findings/countries')
+def countries_chart_route():
+    return countries_chart()
 
 @app.route('/api/data/basic-stats')
 def basic_statistics_route():

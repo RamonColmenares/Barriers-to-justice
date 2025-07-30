@@ -437,31 +437,23 @@
 
   async function loadCountriesChart() {
     try {
-      const response = await fetch(`${API_BASE_URL}/overview`);
+      const response = await fetch(`${API_BASE_URL}/findings/countries`);
       if (!response.ok) throw new Error('Failed to load countries chart');
       
-      const data = await response.json();
+      const plotlyConfig = await response.json();
       
-      // Create chart from top nationalities data
-      const countries = Object.keys(data.top_nationalities).slice(0, 10);
-      const counts = Object.values(data.top_nationalities).slice(0, 10);
+      // Update layout for responsive behavior
+      plotlyConfig.layout.autosize = true;
+      plotlyConfig.layout.width = undefined;
+      plotlyConfig.layout.height = 500;
       
-      const plotlyData = [{
-        x: countries,
-        y: counts,
-        type: 'bar',
-        marker: { color: '#F59E0B' }
-      }];
-
-      const layout = {
-        title: 'Top Countries by Case Volume',
-        xaxis: { title: 'Country' },
-        yaxis: { title: 'Number of Cases' },
-        margin: { t: 50, l: 60, r: 30, b: 100 }
-      };
-      
+      // Use the complete Plotly configuration from backend (with enhanced hover)
       if (window.Plotly) {
-        window.Plotly.newPlot('countriesChart', plotlyData, layout, chartConfig);
+        await window.Plotly.newPlot('countriesChart', plotlyConfig.data, plotlyConfig.layout, chartConfig);
+        // Add resize listener for this chart
+        window.addEventListener('resize', () => {
+          window.Plotly.Plots.resize('countriesChart');
+        });
       }
     } catch (err) {
       console.error('Countries chart error:', err);

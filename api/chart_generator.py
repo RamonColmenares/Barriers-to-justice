@@ -260,12 +260,12 @@ def generate_time_series_chart():
         return {"error": "No analysis data available"}
     
     try:
-        # Filter data with valid dates (like notebook)
-        date_valid = ~analysis_filtered['LATEST_HEARING'].isna()
+        # Filter data with valid dates (like notebook) - use hearing_date_combined column
+        date_valid = ~analysis_filtered['hearing_date_combined'].isna()
         time_series_df = analysis_filtered[date_valid].copy()
         
         # Create quarterly data (like notebook)
-        time_series_df['YEAR_QUARTER'] = time_series_df['LATEST_HEARING'].dt.to_period('Q')
+        time_series_df['YEAR_QUARTER'] = time_series_df['hearing_date_combined'].dt.to_period('Q')
         
         quarterly_rep = time_series_df.groupby('YEAR_QUARTER').agg(
             total_cases=('HAS_LEGAL_REP', 'count'),
@@ -627,6 +627,187 @@ def generate_chi_square_analysis():
         }
     
     return results
+
+def generate_countries_chart():
+    """Generate Plotly chart for top countries by case volume with full country names in hover"""
+    try:
+        from .data_processor import get_data_statistics
+    except ImportError:
+        from data_processor import get_data_statistics
+    
+    # Get statistics which includes top nationalities
+    stats = get_data_statistics()
+    
+    if stats is None or 'nationalities' not in stats:
+        return {"error": "No nationality data available"}
+    
+    try:
+        # Country code to full name mapping for common immigration countries
+        country_mapping = {
+            'GT': 'Guatemala',
+            'HO': 'Honduras', 
+            'MX': 'Mexico',
+            'ES': 'El Salvador',
+            'CU': 'Cuba',
+            'NU': 'Nicaragua', 
+            'BR': 'Brazil',
+            'VE': 'Venezuela',
+            'CO': 'Colombia',
+            'EC': 'Ecuador',
+            'PE': 'Peru',
+            'HA': 'Haiti',
+            'CH': 'China',
+            'IN': 'India',
+            'PH': 'Philippines',
+            'VN': 'Vietnam',
+            'IR': 'Iran',
+            'AF': 'Afghanistan',
+            'SY': 'Syria',
+            'SO': 'Somalia',
+            'ER': 'Eritrea',
+            'ET': 'Ethiopia',
+            'SU': 'Sudan',
+            'RU': 'Russia',
+            'UA': 'Ukraine',
+            'PK': 'Pakistan',
+            'BD': 'Bangladesh',
+            'MM': 'Myanmar',
+            'TH': 'Thailand',
+            'KH': 'Cambodia',
+            'LA': 'Laos',
+            'NP': 'Nepal',
+            'LK': 'Sri Lanka',
+            'TR': 'Turkey',
+            'IQ': 'Iraq',
+            'JO': 'Jordan',
+            'LB': 'Lebanon',
+            'YE': 'Yemen',
+            'EG': 'Egypt',
+            'MA': 'Morocco',
+            'DZ': 'Algeria',
+            'TN': 'Tunisia',
+            'LY': 'Libya',
+            'NG': 'Nigeria',
+            'GH': 'Ghana',
+            'SN': 'Senegal',
+            'ML': 'Mali',
+            'BF': 'Burkina Faso',
+            'CI': 'Côte d\'Ivoire',
+            'LR': 'Liberia',
+            'SL': 'Sierra Leone',
+            'GN': 'Guinea',
+            'GM': 'Gambia',
+            'MR': 'Mauritania',
+            'CF': 'Central African Republic',
+            'TD': 'Chad',
+            'CM': 'Cameroon',
+            'GA': 'Gabon',
+            'CG': 'Congo',
+            'CD': 'Democratic Republic of Congo',
+            'AO': 'Angola',
+            'ZM': 'Zambia',
+            'ZW': 'Zimbabwe',
+            'BW': 'Botswana',
+            'NA': 'Namibia',
+            'ZA': 'South Africa',
+            'SZ': 'Eswatini',
+            'LS': 'Lesotho',
+            'MW': 'Malawi',
+            'MZ': 'Mozambique',
+            'MG': 'Madagascar',
+            'MU': 'Mauritius',
+            'SC': 'Seychelles',
+            'KM': 'Comoros',
+            'DJ': 'Djibouti',
+            'KE': 'Kenya',
+            'UG': 'Uganda',
+            'TZ': 'Tanzania',
+            'RW': 'Rwanda',
+            'BI': 'Burundi',
+            'SS': 'South Sudan'
+        }
+        
+        # Get top 10 countries
+        top_countries = list(stats['nationalities'].items())[:10]
+        
+        # Separate country codes, full names, and counts
+        country_codes = [code for code, count in top_countries]
+        country_names = [country_mapping.get(code, code) for code in country_codes]
+        case_counts = [count for code, count in top_countries]
+        
+        # Create Plotly figure
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            x=country_codes,  # Use short codes for x-axis display
+            y=case_counts,
+            marker_color='#F59E0B',  # Orange color to match the existing design
+            # Custom hover template with full country names
+            hovertemplate='<b>%{customdata}</b><br>' +
+                         'Cases: %{y:,}<br>' +
+                         '<extra></extra>',
+            customdata=country_names,  # Full country names for hover
+            text=[f'{count:,}' for count in case_counts],  # Show count on bars
+            textposition='outside'
+        ))
+        
+        # Update layout
+        fig.update_layout(
+            title={
+                'text': 'Top Countries by Case Volume',
+                'x': 0.5,
+                'font': {'size': 16, 'family': 'Arial, sans-serif', 'color': '#333'}
+            },
+            xaxis={
+                'title': 'Country',
+                'title_font': {'size': 14},
+                'tickangle': -45,  # Angle the labels for better readability
+                'showgrid': False
+            },
+            yaxis={
+                'title': 'Number of Cases',
+                'title_font': {'size': 14},
+                'showgrid': True,
+                'gridcolor': 'rgba(128,128,128,0.3)'
+            },
+            showlegend=False,
+            margin=dict(t=80, l=80, r=40, b=120),  # Extra bottom margin for angled labels
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            font=dict(family='Arial, sans-serif'),
+            width=800,
+            height=500
+        )
+        
+        # Convert to JSON format
+        chart_data = {
+            'data': fig.data,
+            'layout': fig.layout,
+            'config': {
+                'responsive': True,
+                'displayModeBar': True,
+                'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d'],
+                'displaylogo': False
+            }
+        }
+        
+        # Also return the mapping data for reference
+        summary_data = {
+            'country_mapping': {code: country_mapping.get(code, code) for code in country_codes},
+            'total_countries': len(stats['nationalities'])
+        }
+        
+        # Convert to JSON-serializable format
+        result = json.loads(plotly.utils.PlotlyJSONEncoder().encode(chart_data))
+        result['summary'] = summary_data
+        
+        return result
+        
+    except Exception as e:
+        print(f"Countries chart generation error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"error": f"Countries chart generation error: {str(e)}"}
 
 def generate_outcome_percentages_chart():
     """Generate the percentage breakdown chart EXACTLY like notebook"""

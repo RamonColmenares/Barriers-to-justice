@@ -11,7 +11,8 @@ try:
         generate_representation_outcomes_chart,
         generate_time_series_chart,
         generate_chi_square_analysis,
-        generate_outcome_percentages_chart
+        generate_outcome_percentages_chart,
+        generate_countries_chart
     )
     from .basic_stats import get_basic_statistics
     from .models import cache
@@ -22,7 +23,8 @@ except ImportError:
         generate_representation_outcomes_chart,
         generate_time_series_chart,
         generate_chi_square_analysis,
-        generate_outcome_percentages_chart
+        generate_outcome_percentages_chart,
+        generate_countries_chart
     )
     from basic_stats import get_basic_statistics
     from models import cache
@@ -201,6 +203,21 @@ def outcome_percentages():
             return jsonify({"error": "Failed to load or process data"}), 500
         
         chart_data = generate_outcome_percentages_chart()
+        if "error" in chart_data:
+            return jsonify(chart_data), 500
+        
+        return chart_data
+        
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+def countries_chart():
+    """Generate the countries by case volume chart with enhanced hover tooltips"""
+    try:
+        if not load_data():
+            return jsonify({"error": "Failed to load or process data"}), 500
+        
+        chart_data = generate_countries_chart()
         if "error" in chart_data:
             return jsonify(chart_data), 500
         

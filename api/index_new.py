@@ -15,7 +15,8 @@ from .api_routes import (
     representation_outcomes,
     time_series_analysis,
     chi_square_analysis,
-    outcome_percentages
+    outcome_percentages,
+    countries_chart
 )
 from .config import DEBUG
 
@@ -61,6 +62,10 @@ def chi_square_route():
 @app.route('/api/findings/outcome-percentages')
 def outcome_percentages_route():
     return outcome_percentages()
+
+@app.route('/api/findings/countries')
+def countries_chart_route():
+    return countries_chart()
 
 # Vercel serverless function handler
 def handler(request, context):
