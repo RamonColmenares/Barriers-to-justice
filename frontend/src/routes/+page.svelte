@@ -1,5 +1,5 @@
 <!-- Hero Section -->
-<section class="relative flex min-h-[60vh] items-center justify-center bg-cover bg-fixed bg-center text-white" style='background-image: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1dPZXGDzUWSNPDhIolX0qiK_evTpO5NpPSHAJmGVgW8cm7lvwqHyvnNIVjslPo1lDNelkBJcKOMEKOLOamKXKahnRH850tZr_ezZ2MsDujF5-5bshMIYJHFCRxiY0SsCSyI3MVkHJyYdgLbQYpsS2rJR6Wl8mofJoM45bE2-FxejCD4uw8Q2ab4D84vPZr1m1Tq9xI7d8bzWu8g7bRrqfSD-mWtfegJp4T9aqO9bzaJccLcIk1tPkuIhb3JbUop4I2c3mge-m2ls");'>
+<section class="relative flex min-h-[65vh] lg:min-h-[70vh] items-center justify-center bg-cover bg-fixed bg-center text-white pt-4" style='background-image: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1dPZXGDzUWSNPDhIolX0qiK_evTpO5NpPSHAJmGVgW8cm7lvwqHyvnNIVjslPo1lDNelkBJcKOMEKOLOamKXKahnRH850tZr_ezZ2MsDujF5-5bshMIYJHFCRxiY0SsCSyI3MVkHJyYdgLbQYpsS2rJR6Wl8mofJoM45bE2-FxejCD4uw8Q2ab4D84vPZr1m1Tq9xI7d8bzWu8g7bRrqfSD-mWtfegJp4T9aqO9bzaJccLcIk1tPkuIhb3JbUop4I2c3mge-m2ls");'>
   <div class="container mx-auto px-10 text-center">
     <h1 class="text-4xl md:text-6xl font-bold leading-tight drop-shadow-md">Barriers to Justice</h1>
     <p class="mt-4 max-w-3xl mx-auto text-lg md:text-xl font-light">
