@@ -25,11 +25,5 @@
       "src": "/(.*)",
       "dest": "frontend/$1"
     }
-  ],
-  "functions": {
-    "api/*.py": {
-      "maxDuration": 30,
-      "memory": 1024
-    }
-  }
+  ]
 }
