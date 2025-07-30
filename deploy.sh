@@ -61,6 +61,18 @@ if [ -f "package.json" ]; then
     if [ "$S3_BUCKET" != "null" ] && [ -n "$S3_BUCKET" ]; then
         aws s3 sync build/ s3://$S3_BUCKET --delete --quiet
         echo "✓ Frontend deployed to S3"
+        
+        # Invalidate CloudFront cache if distribution exists
+        if [ "$CLOUDFRONT_URL" != "null" ] && [ -n "$CLOUDFRONT_URL" ]; then
+            echo "🔄 Invalidating CloudFront cache..."
+            DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?DomainName=='$CLOUDFRONT_URL'].Id" --output text)
+            if [ ! -z "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+                aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --query 'Invalidation.Id' --output text
+                echo "✓ CloudFront cache invalidated"
+            else
+                echo "⚠️  Could not find CloudFront distribution for invalidation"
+            fi
+        fi
     else
         echo "⚠️  S3 bucket not available, skipping frontend deployment"
     fi
