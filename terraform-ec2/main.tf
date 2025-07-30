@@ -32,20 +32,11 @@ variable "environment" {
   default     = "prod"
 }
 
-# Data sources
-data "aws_ami" "ubuntu" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+# Data sources - Use specific AMI ID to avoid permissions issue
+variable "ubuntu_ami_id" {
+  description = "Ubuntu 22.04 LTS AMI ID for us-east-1"
+  type        = string
+  default     = "ami-0e86e20dae9224db8"  # Ubuntu 22.04 LTS in us-east-1
 }
 
 # Create a VPC
@@ -150,7 +141,7 @@ resource "aws_key_pair" "main" {
 
 # Launch EC2 instance
 resource "aws_instance" "web" {
-  ami                    = data.aws_ami.ubuntu.id
+  ami                    = var.ubuntu_ami_id
   instance_type          = "t2.micro"  # Free tier eligible
   key_name               = aws_key_pair.main.key_name
   vpc_security_group_ids = [aws_security_group.web.id]
@@ -229,7 +220,7 @@ NGINX_EOF
 
 # S3 bucket for static website hosting (frontend)
 resource "aws_s3_bucket" "frontend" {
-  bucket = "${var.project_name}-frontend-${var.environment}"
+  bucket = "${var.project_name}-frontend-${var.environment}-v2"
 }
 
 resource "aws_s3_bucket_public_access_block" "frontend" {
