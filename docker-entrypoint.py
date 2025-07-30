@@ -25,8 +25,19 @@ except ImportError:
 app = Flask(__name__)
 
 # Configure CORS to allow frontend communication
-CORS(app, origins=['*'], methods=['GET', 'POST', 'OPTIONS'], 
-     allow_headers=['Content-Type', 'Authorization'])
+# Allow both CloudFront and direct EC2 access
+allowed_origins = [
+    'https://d2qqofrfkbwcrl.cloudfront.net',
+    'https://54-196-120-37.sslip.io',
+    'http://localhost:3000',  # For local development
+    'http://localhost:5173'   # For Vite dev server
+]
+
+CORS(app, 
+     origins=allowed_origins,
+     methods=['GET', 'POST', 'OPTIONS'], 
+     allow_headers=['Content-Type', 'Authorization'],
+     supports_credentials=False)
 
 # Register API routes with proper URL patterns matching frontend expectations
 app.add_url_rule('/health', 'health', health, methods=['GET'])
