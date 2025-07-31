@@ -80,33 +80,51 @@
       <p class="text-[var(--color-text-secondary)] mt-2">Quick access to the most critical insights from our research.</p>
     </div>
     <div class="grid md:grid-cols-3 gap-8">
-      <div class="text-center p-8 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
-        <div class="text-[var(--color-accent)] mx-auto mb-4">
+      <!-- Access to Legal Aid Card -->
+      <a href="/findings#legal-aid" 
+         class="text-center p-8 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer group block border-2 border-transparent hover:border-[var(--color-accent)]/20">
+        <div class="text-[var(--color-accent)] mx-auto mb-4 group-hover:text-[var(--color-primary)] transition-colors">
           <svg fill="currentColor" height="48px" viewBox="0 0 256 256" width="48px" xmlns="http://www.w3.org/2000/svg">
             <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
           </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2 text-[var(--color-primary)]">Access to Legal Aid</h3>
-        <p class="text-[var(--color-text-secondary)]">Explore the challenges immigrant juveniles face in securing legal representation.</p>
-      </div>
-      <div class="text-center p-8 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
-        <div class="text-[var(--color-accent)] mx-auto mb-4">
+        <h3 class="text-xl font-bold mb-2 text-[var(--color-primary)] group-hover:text-[var(--color-accent)] transition-colors">Access to Legal Aid</h3>
+        <p class="text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">Explore the challenges immigrant juveniles face in securing legal representation.</p>
+        <div class="mt-4 text-sm text-[var(--color-accent)] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          Click to explore findings →
+        </div>
+      </a>
+      
+      <!-- Fairness of Proceedings Card -->
+      <a href="/findings#proceedings" 
+         class="text-center p-8 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer group block border-2 border-transparent hover:border-[var(--color-accent)]/20">
+        <div class="text-[var(--color-accent)] mx-auto mb-4 group-hover:text-[var(--color-primary)] transition-colors">
           <svg fill="currentColor" height="48px" viewBox="0 0 256 256" width="48px" xmlns="http://www.w3.org/2000/svg">
             <path d="M239.43,133l-32-80h0a8,8,0,0,0-9.16-4.84L136,62V40a8,8,0,0,0-16,0V65.58L54.26,80.19A8,8,0,0,0,48.57,85h0v.06L16.57,165a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32a7.92,7.92,0,0,0-.57-3L66.92,93.77,120,82V208H104a8,8,0,0,0,0,16h48a8,8,0,0,0,0-16H136V78.42L187,67.1,160.57,133a7.92,7.92,0,0,0-.57,3c0,23.31,24.54,32,40,32s40-8.69,40-32A7.92,7.92,0,0,0,239.43,133ZM56,184c-7.53,0-22.76-3.61-23.93-14.64L56,109.54l23.93,59.82C78.76,180.39,63.53,184,56,184Zm144-32c-7.53,0-22.76-3.61-23.93-14.64L200,77.54l23.93,59.82C222.76,148.39,207.53,152,200,152Z"></path>
           </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2 text-[var(--color-primary)]">Fairness of Proceedings</h3>
-        <p class="text-[var(--color-text-secondary)]">Understand how current policies affect the fairness of legal proceedings.</p>
-      </div>
-      <div class="text-center p-8 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
-        <div class="text-[var(--color-accent)] mx-auto mb-4">
+        <h3 class="text-xl font-bold mb-2 text-[var(--color-primary)] group-hover:text-[var(--color-accent)] transition-colors">Fairness of Proceedings</h3>
+        <p class="text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">Understand how current policies affect the fairness of legal proceedings.</p>
+        <div class="mt-4 text-sm text-[var(--color-accent)] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          Click to explore findings →
+        </div>
+      </a>
+
+      <!-- Add the third card here in the same format, updating href and content as needed -->
+      <!-- Example: -->
+      <a href="/findings#outcomes" 
+         class="text-center p-8 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 cursor-pointer group block border-2 border-transparent hover:border-[var(--color-accent)]/20">
+        <div class="text-[var(--color-accent)] mx-auto mb-4 group-hover:text-[var(--color-primary)] transition-colors">
           <svg fill="currentColor" height="48px" viewBox="0 0 256 256" width="48px" xmlns="http://www.w3.org/2000/svg">
             <path d="M208,40H48A16,16,0,0,0,32,56v58.77c0,89.61,75.82,119.34,91,124.39a15.53,15.53,0,0,0,10,0c15.2-5.05,91-34.78,91-124.39V56A16,16,0,0,0,208,40Zm0,74.79c0,78.42-66.35,104.62-80,109.18-13.53-4.51-80-30.69-80-109.18V56l160,0Z"></path>
           </svg>
         </div>
-        <h3 class="text-xl font-bold mb-2 text-[var(--color-primary)]">Protection Mechanisms</h3>
-        <p class="text-[var(--color-text-secondary)]">Learn about the effectiveness of existing protection mechanisms for vulnerable youth.</p>
-      </div>
+        <h3 class="text-xl font-bold mb-2 text-[var(--color-primary)] group-hover:text-[var(--color-accent)] transition-colors">Outcomes & Impact</h3>
+        <p class="text-[var(--color-text-secondary)] group-hover:text-[var(--color-primary)] transition-colors">See the real-world impact of legal decisions on immigrant juveniles.</p>
+        <div class="mt-4 text-sm text-[var(--color-accent)] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          Click to explore findings →
+        </div>
+      </a>
     </div>
   </div>
 </section>
@@ -119,7 +137,7 @@
       <p class="section-subtitle">MIT Emerging Talent students dedicated to uncovering barriers to justice.</p>
     </div>
     <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-      <!-- Team Page Link Card -->
+      <!-- Team Page Link Card (a nifoula removed) -->
       <div class="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] rounded-2xl shadow-lg overflow-hidden text-white group hover:scale-105 transition-transform duration-300">
         <div class="p-8 text-center">
           <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -141,7 +159,7 @@
           </a>
         </div>
       </div>
-
+      
       <!-- MIT Emerging Talent Card -->
       <div class="bg-gradient-to-br from-[var(--color-secondary)] to-[var(--color-accent)] rounded-2xl shadow-lg overflow-hidden text-white group hover:scale-105 transition-transform duration-300">
         <div class="p-8 text-center">
