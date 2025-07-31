@@ -117,16 +117,19 @@ if ! docker ps >/dev/null 2>&1; then
     exit 1
 fi
 
+
+# Clean up old Docker containers and images
+echo "🧹 Cleaning up old Docker containers and images..."
+docker stop juvenile-api 2>/dev/null || true
+docker rm juvenile-api 2>/dev/null || true
+docker rmi juvenile-immigration-api 2>/dev/null || true
+
 # Build Docker image
 echo "Building Docker image with Python 3.13.4..."
 docker build -t juvenile-immigration-api . || {
     echo "❌ Docker build failed"
     exit 1
 }
-
-# Stop and remove existing container
-docker stop juvenile-api 2>/dev/null || true
-docker rm juvenile-api 2>/dev/null || true
 
 # Run the container
 docker run -d \
