@@ -43,7 +43,7 @@ app = Flask(__name__)
 # Allow both CloudFront and direct EC2 access
 allowed_origins = [
     'https://d2qqofrfkbwcrl.cloudfront.net',
-    'https://54-196-120-37.sslip.io',
+    'https://54-145-92-66.sslip.io',
     'http://localhost:3000',  # For local development
     'http://localhost:5173'   # For Vite dev server
 ]
