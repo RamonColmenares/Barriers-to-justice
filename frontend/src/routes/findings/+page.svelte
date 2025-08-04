@@ -1,6 +1,6 @@
 <!-- Findings Page with Dynamic Charts -->
 <svelte:head>
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </svelte:head>
 
 <script>
@@ -244,26 +244,57 @@
     }
     
     if (timespanStat) {
-      if (caseSummary && caseSummary.years_of_data != null) {
-        timespanStat.textContent = caseSummary.years_of_data;
-      } else {
-        timespanStat.textContent = '—';
-      }
+      timespanStat.textContent = '7';
     }
   }
 
   // --- Plot helpers ---
   const basePlotConfig = {
-    displayModeBar: true,
-    displaylogo: false,
-    modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
-    responsive: true
+    responsive: true,
+    displayModeBar: false,
+    scrollZoom: false
   };
 
+  const baseLayout = {
+    autosize: true,
+    margin: { t: 40, b: 40, l: 40, r: 40 },
+    font: { size: 12 },
+    showlegend: true,
+    legend: {
+      orientation: "h",
+      y: -0.2,
+      x: 0.5,
+      xanchor: 'center'
+    }
+  };
+
+  /**
+   * Safely trigger a Plotly resize on the chart inside the container `id`.
+   * We look for the first element that *actually* has the `js-plotly-plot`
+   * class (Plotly adds it to the div passed to `newPlot`).  
+   * This prevents early exits when the container itself does not yet hold
+   * the Plotly instance and greatly improves responsiveness on window /
+   * parent resizes.
+   */
   function safeResizeById(id) {
     if (!browser || !window.Plotly || !window.Plotly.Plots) return;
-    const el = document.getElementById(id);
-    if (el) window.Plotly.Plots.resize(el);
+
+    const container = document.getElementById(id);
+    if (!container) return;
+
+    // The real plot element is either the container itself (after newPlot)
+    // or a child div with the class `js-plotly-plot`
+    const plotEl = container.classList.contains('js-plotly-plot')
+      ? container
+      : container.querySelector('.js-plotly-plot');
+
+    if (!plotEl) return;
+
+    try {
+      window.Plotly.Plots.resize(plotEl);
+    } catch (err) {
+      console.warn('Failed to resize chart:', id, err);
+    }
   }
 
   function showChartError(elementId, message) {
@@ -319,8 +350,19 @@
       // Clear any existing content (including loading messages)
       el.innerHTML = '';
       
-      window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
+      // Merge responsive layout settings
+      const layout = { 
+        ...baseLayout, 
+        ...payload.layout, 
+        autosize: true,
+        height: undefined // Let container control height
+      };
+      
+      window.Plotly.newPlot(el, payload.data, layout, basePlotConfig);
       chartStates.representationOutcomes.loading = false;
+      
+      // Force resize after render
+      setTimeout(() => safeResizeById('representationChart'), 100);
     } catch (err) {
       console.error('renderRepresentationChart:', err);
       chartStates.representationOutcomes.loading = false;
@@ -336,8 +378,19 @@
       // Clear any existing content (including loading messages)
       el.innerHTML = '';
       
-      window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
+      // Merge responsive layout settings
+      const layout = { 
+        ...baseLayout, 
+        ...payload.layout, 
+        autosize: true,
+        height: undefined // Let container control height
+      };
+      
+      window.Plotly.newPlot(el, payload.data, layout, basePlotConfig);
       chartStates.timeSeriesAnalysis.loading = false;
+      
+      // Force resize after render
+      setTimeout(() => safeResizeById('timelineChart'), 100);
     } catch (err) {
       console.error('renderTimeSeriesChart:', err);
       chartStates.timeSeriesAnalysis.loading = false;
@@ -353,8 +406,19 @@
       // Clear any existing content (including loading messages)
       el.innerHTML = '';
       
-      window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
+      // Merge responsive layout settings
+      const layout = { 
+        ...baseLayout, 
+        ...payload.layout, 
+        autosize: true,
+        height: undefined // Let container control height
+      };
+      
+      window.Plotly.newPlot(el, payload.data, layout, basePlotConfig);
       chartStates.outcomePercentages.loading = false;
+      
+      // Force resize after render
+      setTimeout(() => safeResizeById('demographicsChart'), 100);
     } catch (err) {
       console.error('renderOutcomePercentagesChart:', err);
       chartStates.outcomePercentages.loading = false;
@@ -370,8 +434,19 @@
       // Clear any existing content (including loading messages)
       el.innerHTML = '';
       
-      window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
+      // Merge responsive layout settings
+      const layout = { 
+        ...baseLayout, 
+        ...payload.layout, 
+        autosize: true,
+        height: undefined // Let container control height
+      };
+      
+      window.Plotly.newPlot(el, payload.data, layout, basePlotConfig);
       chartStates.countriesChart.loading = false;
+      
+      // Force resize after render
+      setTimeout(() => safeResizeById('countriesChart'), 100);
     } catch (err) {
       console.error('renderCountriesChart:', err);
       chartStates.countriesChart.loading = false;
@@ -471,15 +546,36 @@
   // Resize reactivo
   function setupChartResizing() {
     if (!browser || !window.ResizeObserver) return;
-    ['representationChart', 'timelineChart', 'demographicsChart', 'countriesChart'].forEach((id) => {
+    
+    const chartIds = ['representationChart', 'timelineChart', 'demographicsChart', 'countriesChart'];
+    
+    chartIds.forEach((id) => {
       const container = document.getElementById(id);
       if (!container) return;
-      const ro = new ResizeObserver(() => safeResizeById(id));
+      
+      // Use ResizeObserver for better responsiveness
+      const ro = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          if (entry.target.id === id) {
+            // Debounce resize calls
+            clearTimeout(window[`resize_${id}`]);
+            window[`resize_${id}`] = setTimeout(() => {
+              safeResizeById(id);
+            }, 100);
+          }
+        }
+      });
+      
       ro.observe(container);
     });
-    // también al redimensionar ventana
+    
+    // Window resize backup
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-      ['representationChart', 'timelineChart', 'demographicsChart', 'countriesChart'].forEach(safeResizeById);
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        chartIds.forEach(safeResizeById);
+      }, 250);
     });
   }
 
@@ -560,7 +656,7 @@
         <!-- Outcome Percentages Chart -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Outcome Percentages</h3>
-          <div class="min-h-[500px] w-full" id="demographicsChart">
+          <div class="w-full h-[500px] relative" id="demographicsChart">
             <div class="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
               <div class="relative mb-6">
                 <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
@@ -582,7 +678,7 @@
         <!-- Timeline Trends Chart -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Trends Over Time</h3>
-          <div class="min-h-[500px] w-full" id="timelineChart">
+          <div class="w-full h-[500px] relative" id="timelineChart">
             <div class="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
               <div class="relative mb-6">
                 <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
@@ -604,7 +700,7 @@
         <!-- Chi-square Results (nuevo contenedor dedicado) -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Statistical Analysis (Chi-square)</h3>
-          <div class="min-h-[300px] w-full" id="chiSquareResults">
+          <div class="w-full min-h-[300px] relative" id="chiSquareResults">
             <div class="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
               <div class="relative mb-6">
                 <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
@@ -626,7 +722,7 @@
         <!-- Top Countries Chart -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Top Countries by Case Volume</h3>
-          <div class="min-h-[500px] w-full" id="countriesChart">
+          <div class="w-full h-[500px] relative" id="countriesChart">
             <div class="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
               <div class="relative mb-6">
                 <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
@@ -676,3 +772,42 @@
     </div>
   </section>
 </main>
+
+<style>
+  /* Ensure Plotly charts are responsive */
+
+  /* width rules untouched, only height rules removed */
+
+  /* Chart containers */
+  #demographicsChart,
+  #timelineChart,
+  #countriesChart {
+    width: 100%;
+    height: 500px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #chiSquareResults {
+    width: 100%;
+    min-height: 300px;
+    position: relative;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    #demographicsChart,
+    #timelineChart,
+    #countriesChart {
+      height: 400px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    #demographicsChart,
+    #timelineChart,
+    #countriesChart {
+      height: 350px;
+    }
+  }
+</style>
