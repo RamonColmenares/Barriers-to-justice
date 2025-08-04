@@ -65,7 +65,7 @@ echo "  Hostname: $HOSTNAME_SSLIP"
 # Build and deploy frontend
 echo "🎨 Building and deploying frontend..."
 cd ../frontend
-echo "PUBLIC_API_URL=https://$HOSTNAME_SSLIP" > .env.production
+echo "PUBLIC_API_URL=https://$HOSTNAME_SSLIP/api" > .env.production
 
 if [ -f "package.json" ]; then
     npm install --silent

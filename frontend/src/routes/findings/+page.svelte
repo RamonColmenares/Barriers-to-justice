@@ -204,11 +204,7 @@
 
 <script>
   import { onMount } from 'svelte';
-
-  // API Configuration - use HTTPS for production
-  const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000/api'  // Development
-    : 'https://54-145-92-66.sslip.io/api';  // Production HTTPS
+  import { API_BASE_URL } from '$lib/config.js';
 
   // Data stores
   let caseSummary = null;
