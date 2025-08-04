@@ -1,2 +1,11 @@
 {
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.venv.path": "./.venv",
+    "python.terminal.activateEnvironment": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic"
 }

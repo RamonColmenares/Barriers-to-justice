@@ -39,9 +39,16 @@ allowed_origins = [
         'http://localhost:5173'
     ] if origin
 ]
-# allow any *.sslip.io origin dynamically by overriding CORS
+# allow any *.sslip.io origin dynamically by compiling regex
+sslip_pattern = re.compile(r"https://.*\.sslip\.io")
 
-CORS(app, resources={r"/api/*": {"origins": allowed_origins + [r"https://.*\.sslip\.io"]}}, methods=['GET', 'POST', 'OPTIONS'], allow_headers=['Content-Type', 'Authorization'], supports_credentials=False)
+# For debugging CORS issues, temporarily allow all origins
+# Remove this in production and use specific origins
+CORS(app, 
+     resources={r"/api/*": {"origins": "*"}}, 
+     methods=['GET', 'POST', 'OPTIONS'], 
+     allow_headers=['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'], 
+     supports_credentials=False)
 
 # Configuration
 app.config['DEBUG'] = DEBUG
