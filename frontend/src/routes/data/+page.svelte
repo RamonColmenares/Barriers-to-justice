@@ -272,7 +272,7 @@
 
 <script>
   import { onMount } from 'svelte';
-  import { API_BASE_URL } from '$lib/config.js';
+  import { apiService } from '$lib/services/apiService.js';
 
   // Data stores
   let caseSummary = null;
@@ -289,7 +289,7 @@
     error = null;
     
     try {
-      // Load both overview data and basic statistics
+      // Load both overview data and basic statistics using the new API service
       await Promise.all([
         loadOverviewData(),
         loadBasicStats()
@@ -311,9 +311,7 @@
 
   async function loadOverviewData() {
     try {
-      const response = await fetch(`${API_BASE_URL}/overview`);
-      if (!response.ok) throw new Error('Failed to load overview data');
-      caseSummary = await response.json();
+      caseSummary = await apiService.getOverview();
     } catch (err) {
       console.error('Overview data error:', err);
       throw err;
@@ -322,9 +320,7 @@
 
   async function loadBasicStats() {
     try {
-      const response = await fetch(`${API_BASE_URL}/data/basic-stats`);
-      if (!response.ok) throw new Error('Failed to load basic statistics');
-      representationOutcomes = await response.json();
+      representationOutcomes = await apiService.getBasicStatistics();
     } catch (err) {
       console.error('Basic statistics error:', err);
       throw err;

@@ -65,6 +65,64 @@ h1, h2, h3 {
   @apply py-16 md:py-24;
 }
 
+/* Animaciones de carga mejoradas */
+.modern-loader {
+  @apply flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8;
+}
+
+.dual-spinner {
+  @apply relative w-16 h-16 mb-6;
+}
+
+.spinner-primary {
+  @apply absolute inset-0 w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin;
+}
+
+.spinner-secondary {
+  @apply absolute inset-0 w-16 h-16 border-4 border-transparent border-r-indigo-300 rounded-full animate-pulse;
+}
+
+.loading-dots {
+  @apply flex space-x-1;
+}
+
+.loading-dot {
+  @apply w-2 h-2 bg-blue-400 rounded-full animate-pulse;
+}
+
+.loading-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Error states mejorados */
+.gentle-error {
+  @apply flex flex-col items-center justify-center h-full bg-blue-50 rounded-lg border border-blue-200 p-8;
+}
+
+.error-icon {
+  @apply text-blue-500 mb-6;
+}
+
+/* Animaciones más suaves */
+@keyframes gentlePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
 /* Mejoras para efecto parallax */
 .parallax-hero {
   background-attachment: fixed;

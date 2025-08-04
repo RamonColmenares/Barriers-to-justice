@@ -88,12 +88,9 @@ echo ""
 
 # Start backend server
 echo "🐍 Starting Python backend server on http://localhost:5000..."
-cd api
-# Make sure we're still in the virtual environment
-source ../.venv/bin/activate
-python index.py &
+export PYTHONPATH="$(pwd)"
+python -m api.index &
 BACKEND_PID=$!
-cd ..
 
 # Wait a moment for backend to start
 sleep 3

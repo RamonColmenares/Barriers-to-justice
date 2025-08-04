@@ -11,38 +11,38 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 py-8">
   <div class="max-w-md w-full text-center">
-    <div class="mb-8">
-      <div class="text-6xl font-bold text-indigo-600 mb-4">
+    <div class="mb-12">
+      <div class="text-6xl font-bold text-indigo-500 mb-6">
         {status || '404'}
       </div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-4">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6">
         {#if status === 404}
           Page Not Found
         {:else if status === 500}
-          Server Error
+          Temporary Issue
         {:else}
-          Something went wrong
+          Something's Not Right
         {/if}
       </h1>
-      <p class="text-gray-600 mb-8">
+      <p class="text-gray-600 mb-8 px-4">
         {#if status === 404}
-          The page you're looking for doesn't exist or has been moved.
+          The page you're looking for seems to have moved or doesn't exist.
         {:else if status === 500}
-          We're experiencing some technical difficulties. Please try again later.
+          We're experiencing some technical difficulties. We'll have this fixed soon!
         {:else}
-          {error?.message || 'An unexpected error occurred.'}
+          {error?.message || 'Don\'t worry, these things happen sometimes.'}
         {/if}
       </p>
     </div>
     
-    <div class="space-y-4">
+    <div class="space-y-4 mb-8">
       <button 
         on:click={goHome}
-        class="w-full bg-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-700 transition-colors duration-200"
+        class="w-full bg-indigo-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-indigo-600 transition-colors duration-200"
       >
-        Go Home
+        Take Me Home
       </button>
       
       <button 
@@ -53,11 +53,11 @@
       </button>
     </div>
     
-    <div class="mt-8 text-sm text-gray-500">
+    <div class="text-sm text-gray-500 px-4">
       <p>
-        If you believe this is an error, please 
-        <a href="/contact" class="text-indigo-600 hover:text-indigo-800 underline">
-          contact us
+        Need help? Feel free to 
+        <a href="/contact" class="text-indigo-500 hover:text-indigo-700 underline">
+          get in touch
         </a>
       </p>
     </div>
@@ -65,17 +65,19 @@
 </div>
 
 <style>
-  /* Add some animation to the error number */
+  /* Add some smooth animation to the error number */
   .text-6xl {
-    animation: pulse 2s infinite;
+    animation: gentlePulse 3s ease-in-out infinite;
   }
   
-  @keyframes pulse {
+  @keyframes gentlePulse {
     0%, 100% {
       opacity: 1;
+      transform: scale(1);
     }
     50% {
-      opacity: 0.7;
+      opacity: 0.8;
+      transform: scale(1.02);
     }
   }
 </style>

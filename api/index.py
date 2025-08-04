@@ -6,7 +6,7 @@ from flask import Flask
 from flask_cors import CORS
 
 # Import route handlers
-from .api_routes import (
+from api.api_routes import (
     health,
     get_overview,
     get_filtered_overview,
@@ -19,7 +19,8 @@ from .api_routes import (
     outcome_percentages,
     countries_chart,
     basic_statistics,
-    meta_options
+    meta_options,
+    get_all_findings_data
 )
 from .config import DEBUG
 
@@ -96,6 +97,10 @@ def countries_chart_route():
 @app.route('/api/data/basic-stats')
 def basic_statistics_route():
     return basic_statistics()
+
+@app.route('/api/findings/all')
+def all_findings_route():
+    return get_all_findings_data()
 
 # Vercel serverless function handler
 def handler(request, context):

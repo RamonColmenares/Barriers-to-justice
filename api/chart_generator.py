@@ -110,10 +110,10 @@ def generate_representation_outcomes_chart(filters=None):
         # Create Plotly figure for count plot with log scale (EXACTLY like notebook)
         fig = go.Figure()
         
-        # Custom colors EXACTLY like notebook
+        # Custom colors EXACTLY like notebook - using RGBA format for transparency
         colors = {
-            'Favorable': '#B5E68160',  # Light green with transparency
-            'Unfavorable': '#FF5E5E7D'  # Light red with transparency  
+            'Favorable': 'rgba(181, 230, 129, 0.6)',  # Light green with transparency
+            'Unfavorable': 'rgba(255, 94, 94, 0.6)'  # Light red with transparency  
         }
         
         # Get the categories (representation levels)
@@ -336,8 +336,13 @@ def generate_time_series_chart(filters=None):
     
     try:
         # Filter data with valid dates (like notebook) - use hearing_date_combined column
+        # Also filter out future dates (scheduled hearings) to show only historical trends
+        current_date = pd.Timestamp.now()
+        
         date_valid = ~analysis_filtered['hearing_date_combined'].isna()
-        time_series_df = analysis_filtered[date_valid].copy()
+        historical_only = analysis_filtered['hearing_date_combined'] <= current_date
+        
+        time_series_df = analysis_filtered[date_valid & historical_only].copy()
         
         # Create quarterly data (like notebook)
         time_series_df['YEAR_QUARTER'] = time_series_df['hearing_date_combined'].dt.to_period('Q')

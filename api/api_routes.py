@@ -3,9 +3,6 @@ API route handlers for the juvenile immigration API
 """
 from flask import jsonify, request
 from datetime import datetime
-import boto3
-from botocore.exceptions import ClientError
-import os
 
 # Local imports
 from .data_loader import load_data, download_raw_files_from_google_drive, save_to_cache
@@ -42,6 +39,7 @@ def meta_options():
         return jsonify({"options": opts})
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
 def get_overview():
     """Get overview statistics from real data"""
     try:
@@ -59,17 +57,28 @@ def get_overview():
         juvenile_cases = cache.get('juvenile_cases')
         if juvenile_cases is not None and 'LATEST_HEARING' in juvenile_cases.columns:
             try:
-                # Group by month for trends
-                monthly_data = juvenile_cases.copy()
-                monthly_data['month'] = monthly_data['LATEST_HEARING'].dt.to_period('M')
-                monthly_counts = monthly_data.groupby('month').size()
+                # Filter only historical data (not future scheduled hearings)
+                import pandas as pd
+                current_date = pd.Timestamp.now()
                 
-                # Convert to dictionary for JSON serialization
-                trends = {
-                    "monthly_cases": {
-                        str(month): count for month, count in monthly_counts.tail(12).items()
+                # Group by month for trends - only historical data
+                historical_data = juvenile_cases[
+                    (juvenile_cases['LATEST_HEARING'].notna()) & 
+                    (juvenile_cases['LATEST_HEARING'] <= current_date)
+                ].copy()
+                
+                if len(historical_data) > 0:
+                    historical_data['month'] = historical_data['LATEST_HEARING'].dt.to_period('M')
+                    monthly_counts = historical_data.groupby('month').size()
+                    
+                    # Convert to dictionary for JSON serialization - last 12 months
+                    trends = {
+                        "monthly_cases": {
+                            str(month): count for month, count in monthly_counts.tail(12).items()
+                        }
                     }
-                }
+                else:
+                    trends = {"monthly_cases": {}}
             except Exception as e:
                 print(f"Error calculating trends: {str(e)}")
                 trends = {"monthly_cases": {}}
@@ -168,7 +177,7 @@ def representation_outcomes():
         from .filters import Filters
         filters = Filters.from_query(request.args)
         
-        chart_data = generate_representation_outcomes_chart(filters)
+        chart_data = generate_representation_outcomes_chart(filters.to_dict())
         if "error" in chart_data:
             return jsonify(chart_data), 500
         
@@ -187,7 +196,7 @@ def time_series_analysis():
         from .filters import Filters
         filters = Filters.from_query(request.args)
         
-        chart_data = generate_time_series_chart(filters)
+        chart_data = generate_time_series_chart(filters.to_dict())
         if "error" in chart_data:
             return jsonify(chart_data), 500
         
@@ -206,7 +215,7 @@ def chi_square_analysis():
         from .filters import Filters
         filters = Filters.from_query(request.args)
         
-        results = generate_chi_square_analysis(filters)
+        results = generate_chi_square_analysis(filters.to_dict())
         return jsonify(results)
         
     except Exception as e:
@@ -222,7 +231,7 @@ def outcome_percentages():
         from .filters import Filters
         filters = Filters.from_query(request.args)
         
-        chart_data = generate_outcome_percentages_chart(filters)
+        chart_data = generate_outcome_percentages_chart(filters.to_dict())
         if "error" in chart_data:
             return jsonify(chart_data), 500
         
@@ -241,7 +250,7 @@ def countries_chart():
         from .filters import Filters
         filters = Filters.from_query(request.args)
         
-        chart_data = generate_countries_chart(filters)
+        chart_data = generate_countries_chart(filters.to_dict())
         if "error" in chart_data:
             return jsonify(chart_data), 500
         
@@ -283,6 +292,62 @@ def get_filtered_overview():
             return jsonify({"error": "Failed to calculate filtered statistics"}), 500
         
         return jsonify(filtered_stats)
+        
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+def get_all_findings_data():
+    """Get all findings chart data in a single request to reduce API calls"""
+    try:
+        if not load_data():
+            return jsonify({"error": "Failed to load or process data"}), 500
+        
+        # Get filters from request parameters
+        from .filters import Filters
+        filters = Filters.from_query(request.args)
+        
+        results = {}
+        errors = []
+        
+        # Try to generate each chart, handling errors individually
+        try:
+            results['representationOutcomes'] = generate_representation_outcomes_chart(filters)
+        except Exception as e:
+            results['representationOutcomes'] = {"error": f"Representation chart error: {str(e)}"}
+            errors.append(f"Representation outcomes: {str(e)}")
+        
+        try:
+            results['timeSeriesAnalysis'] = generate_time_series_chart(filters)
+        except Exception as e:
+            results['timeSeriesAnalysis'] = {"error": f"Time series chart error: {str(e)}"}
+            errors.append(f"Time series analysis: {str(e)}")
+        
+        try:
+            results['chiSquareAnalysis'] = generate_chi_square_analysis(filters)
+        except Exception as e:
+            results['chiSquareAnalysis'] = {"error": f"Chi-square analysis error: {str(e)}"}
+            errors.append(f"Chi-square analysis: {str(e)}")
+        
+        try:
+            results['outcomePercentages'] = generate_outcome_percentages_chart(filters)
+        except Exception as e:
+            results['outcomePercentages'] = {"error": f"Outcome percentages error: {str(e)}"}
+            errors.append(f"Outcome percentages: {str(e)}")
+        
+        try:
+            results['countriesChart'] = generate_countries_chart(filters)
+        except Exception as e:
+            results['countriesChart'] = {"error": f"Countries chart error: {str(e)}"}
+            errors.append(f"Countries chart: {str(e)}")
+        
+        # Include error summary if any occurred
+        if errors:
+            results['errors'] = errors
+            results['partial_success'] = True
+        else:
+            results['success'] = True
+        
+        return jsonify(results)
         
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500

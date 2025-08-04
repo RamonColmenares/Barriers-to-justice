@@ -62,6 +62,14 @@ class Filters:
         if not ct:
             ct = "all"
         return cls(time_period=tp, representation=rep, case_type=ct)
+    
+    def to_dict(self) -> Dict[str, str]:
+        """Convert Filters object to dictionary for compatibility"""
+        return {
+            'time_period': self.time_period,
+            'representation': self.representation,
+            'case_type': self.case_type
+        }
 
 def _pick_date_col(df: pd.DataFrame) -> Optional[str]:
     for col in DATE_COLUMNS_PRIORITY:
