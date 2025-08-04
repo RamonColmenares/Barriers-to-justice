@@ -50,6 +50,29 @@
         <!-- Contact Form -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
           <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-6">Send us a Message</h2>
+          
+          <!-- Message Display -->
+          {#if submitMessage}
+            <div class="mb-6 p-4 rounded-md {submitSuccess ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  {#if submitSuccess}
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                  {:else}
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                  {/if}
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium">{submitMessage}</p>
+                </div>
+              </div>
+            </div>
+          {/if}
+          
           <form class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -97,8 +120,16 @@
               </label>
             </div>
 
-            <button type="submit" class="w-full bg-[var(--color-primary)] text-white py-3 px-6 rounded-md hover:bg-[var(--color-secondary)] transition-colors font-medium">
-              Send Message
+            <button type="submit" disabled={isSubmitting} class="w-full bg-[var(--color-primary)] text-white py-3 px-6 rounded-md hover:bg-[var(--color-secondary)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              {#if isSubmitting}
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Sending...
+              {:else}
+                Send Message
+              {/if}
             </button>
           </form>
         </div>
@@ -202,6 +233,10 @@
 <script>
   import { onMount } from 'svelte';
 
+  let isSubmitting = false;
+  let submitMessage = '';
+  let submitSuccess = false;
+
   onMount(() => {
     // Add form submission handling
     const form = document.querySelector('form');
@@ -210,20 +245,49 @@
     }
   });
 
-  function handleFormSubmit(event) {
+  async function handleFormSubmit(event) {
     event.preventDefault();
     
-    // Get form data
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
+    if (isSubmitting) return;
     
-    // Here you would typically send the data to your backend
-    console.log('Form submitted:', data);
+    isSubmitting = true;
+    submitMessage = '';
+    submitSuccess = false;
     
-    // Show success message (you could add a toast notification here)
-    alert('Thank you for your message! We will get back to you soon.');
-    
-    // Reset form
-    event.target.reset();
+    try {
+      // Get form data
+      const formData = new FormData(event.target);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Convert checkbox to boolean
+      data.newsletter = !!data.newsletter;
+      
+      // Send to API
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        submitSuccess = true;
+        submitMessage = result.message || 'Thank you for your message! We will get back to you soon.';
+        event.target.reset();
+      } else {
+        submitSuccess = false;
+        submitMessage = result.error || 'Failed to send message. Please try again.';
+      }
+      
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      submitSuccess = false;
+      submitMessage = 'Network error. Please check your connection and try again.';
+    } finally {
+      isSubmitting = false;
+    }
   }
 </script>

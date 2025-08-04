@@ -32,6 +32,12 @@ variable "environment" {
   default     = "prod"
 }
 
+variable "contact_email" {
+  description = "Email address for contact form submissions and SES"
+  type        = string
+  default     = ""
+}
+
 # Data sources - Use specific AMI ID to avoid permissions issue
 variable "ubuntu_ami_id" {
   description = "Ubuntu 22.04 LTS AMI ID for us-east-1"
@@ -154,6 +160,7 @@ resource "aws_instance" "web" {
   key_name               = aws_key_pair.main.key_name
   vpc_security_group_ids = [aws_security_group.web.id]
   subnet_id              = aws_subnet.public.id
+  iam_instance_profile   = aws_iam_instance_profile.ses_profile.name
 
   user_data = <<-EOF
               #!/bin/bash
@@ -353,6 +360,61 @@ resource "aws_cloudfront_distribution" "frontend" {
   price_class = "PriceClass_100"  # Use only North America and Europe (cheaper)
 }
 
+# SES (Simple Email Service) Configuration
+resource "aws_ses_email_identity" "contact_email" {
+  count = var.contact_email != "" ? 1 : 0
+  email = var.contact_email
+}
+
+# IAM role for EC2 to send emails via SES
+resource "aws_iam_role" "ses_role" {
+  name = "${var.project_name}-ses-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM policy for SES
+resource "aws_iam_policy" "ses_policy" {
+  name = "${var.project_name}-ses-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach policy to role
+resource "aws_iam_role_policy_attachment" "ses_policy_attachment" {
+  role       = aws_iam_role.ses_role.name
+  policy_arn = aws_iam_policy.ses_policy.arn
+}
+
+# Instance profile for EC2
+resource "aws_iam_instance_profile" "ses_profile" {
+  name = "${var.project_name}-ses-profile"
+  role = aws_iam_role.ses_role.name
+}
+
 # Outputs
 output "ec2_public_ip" {
   description = "Public IP of the EC2 instance"
@@ -372,4 +434,9 @@ output "s3_website_url" {
 output "cloudfront_url" {
   description = "CloudFront distribution URL"
   value       = aws_cloudfront_distribution.frontend.domain_name
+}
+
+output "ses_email_identity" {
+  description = "SES email identity for contact form"
+  value       = var.contact_email != "" ? aws_ses_email_identity.contact_email[0].email : ""
 }

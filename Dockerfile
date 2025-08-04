@@ -33,6 +33,7 @@ EXPOSE 5000
 ENV FLASK_APP=docker-entrypoint.py
 ENV FLASK_ENV=production
 ENV PYTHONPATH=/app
+ENV CONTACT_EMAIL=${CONTACT_EMAIL:-your-email@example.com}
 
 # Run the application
 CMD ["python", "docker-entrypoint.py"]

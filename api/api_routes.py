@@ -17,6 +17,7 @@ from .chart_generator import (
 from .basic_stats import get_basic_statistics, get_filtered_statistics
 from .models import cache
 from .filters import Filters, filter_options
+from .email_service import email_service
 
 def health():
     """Health check endpoint"""
@@ -351,3 +352,36 @@ def get_all_findings_data():
         
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+
+def contact():
+    """Handle contact form submissions"""
+    if request.method != 'POST':
+        return jsonify({"error": "Method not allowed"}), 405
+    
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        # Send email via SES
+        success, message = email_service.send_contact_email(data)
+        
+        if success:
+            return jsonify({
+                "success": True,
+                "message": message
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "error": message
+            }), 400
+            
+    except Exception as e:
+        print(f"Contact form error: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": "An unexpected error occurred. Please try again later."
+        }), 500

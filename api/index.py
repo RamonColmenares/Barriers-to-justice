@@ -20,7 +20,8 @@ from api.api_routes import (
     countries_chart,
     basic_statistics,
     meta_options,
-    get_all_findings_data
+    get_all_findings_data,
+    contact
 )
 from .config import DEBUG
 
@@ -101,6 +102,10 @@ def basic_statistics_route():
 @app.route('/api/findings/all')
 def all_findings_route():
     return get_all_findings_data()
+
+@app.route('/api/contact', methods=['POST'])
+def contact_route():
+    return contact()
 
 # Vercel serverless function handler
 def handler(request, context):

@@ -11,13 +11,20 @@ MIT Emerging Talent research project analyzing barriers to justice in the U.S. i
 
 ### Deploy to AWS
 ```bash
-./deploy.sh
+# Deploy with your contact email for email service
+./deploy.sh --email your-email@domain.com
+
+# Or use the short flag
+./deploy.sh -e your-email@domain.com
 ```
 
 This deploys:
 - **Backend**: Python 3.13.4 Flask API in Docker on EC2 t2.micro (Free Tier)
 - **Frontend**: SvelteKit static site on S3 with CloudFront CDN
+- **Email Service**: AWS SES for contact form functionality
 - **Infrastructure**: Terraform-managed AWS resources
+
+**Note**: You'll need to verify your email address in AWS SES after deployment to enable contact form emails.
 
 ## 🏠 Local Development
 
@@ -43,6 +50,7 @@ cd api && pip install -r requirements.txt
 - `GET /api/findings/chi-square` - Chi-square analysis results
 - `GET /api/findings/outcome-percentages` - Outcome percentage charts
 - `GET /api/findings/countries` - Country-based analysis
+- `POST /api/contact` - Contact form submission (sends email via AWS SES)
 
 ## 📁 Project Structure
 

@@ -4,6 +4,38 @@ echo "=== JUVENILE IMMIGRATION API - EC2 DEPLOYMENT ==="
 echo "Python 3.13.4 | Docker | EC2 t2.micro Free Tier"
 echo ""
 
+# Parse command line arguments
+CONTACT_EMAIL=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --email)
+            CONTACT_EMAIL="$2"
+            shift 2
+            ;;
+        -e)
+            CONTACT_EMAIL="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--email EMAIL] [-e EMAIL]"
+            echo ""
+            echo "Options:"
+            echo "  --email, -e EMAIL    Contact email for SES and Let's Encrypt certificates"
+            echo "  --help, -h           Show this help message"
+            echo ""
+            echo "Example:"
+            echo "  $0 --email contact@yourdomain.com"
+            echo "  $0 -e contact@yourdomain.com"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 # Check dependencies
 command -v terraform >/dev/null 2>&1 || { echo "Error: terraform is required but not installed." >&2; exit 1; }
 command -v aws >/dev/null 2>&1 || { echo "Error: aws cli is required but not installed." >&2; exit 1; }
@@ -11,11 +43,36 @@ command -v aws >/dev/null 2>&1 || { echo "Error: aws cli is required but not ins
 # Check AWS credentials
 aws sts get-caller-identity >/dev/null 2>&1 || { echo "Error: AWS credentials not configured." >&2; exit 1; }
 
-# Load secrets (e.g., CONTACT_EMAIL) from env or from a user file outside the repo
+# Load secrets from env file if email not provided as parameter
 if [ -z "$CONTACT_EMAIL" ] && [ -f "$HOME/.juvenile_api_deploy" ]; then
     # shellcheck disable=SC1090
     . "$HOME/.juvenile_api_deploy"
 fi
+
+# Prompt for email if still not provided
+if [ -z "$CONTACT_EMAIL" ]; then
+    echo "📧 Contact email is required for:"
+    echo "   - AWS SES email service configuration"
+    echo "   - Let's Encrypt SSL certificate registration"
+    echo ""
+    read -p "Enter your contact email: " CONTACT_EMAIL
+    
+    if [ -z "$CONTACT_EMAIL" ]; then
+        echo "❌ Contact email is required for deployment"
+        exit 1
+    fi
+    
+    # Ask if user wants to save the email for future deployments
+    echo ""
+    read -p "Save this email for future deployments? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "CONTACT_EMAIL=$CONTACT_EMAIL" > "$HOME/.juvenile_api_deploy"
+        echo "✓ Email saved to $HOME/.juvenile_api_deploy"
+    fi
+fi
+
+echo "✓ Using contact email: $CONTACT_EMAIL"
 
 # Disable AWS CLI pager to avoid opening outputs in "less"
 export AWS_PAGER=""
@@ -41,8 +98,8 @@ rm -rf build/ api.zip
 echo "🚀 Deploying infrastructure with Terraform..."
 cd terraform-ec2
 terraform init
-terraform plan
-terraform apply -auto-approve
+terraform plan -var="contact_email=$CONTACT_EMAIL"
+terraform apply -var="contact_email=$CONTACT_EMAIL" -auto-approve
 
 # Get outputs
 EC2_IP=$(terraform output -raw ec2_public_ip 2>/dev/null)
