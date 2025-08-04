@@ -534,7 +534,7 @@
           <div class="text-sm opacity-90">Cases analyzed</div>
         </div>
         <div class="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] rounded-2xl p-6 text-white text-center">
-          <div class="text-4xl font-bold mb-2" id="stat-timespan">—</div>
+          <div class="text-4xl font-bold mb-2" id="stat-timespan">-</div>
           <div class="text-sm opacity-90">Years of data</div>
         </div>
       </div>

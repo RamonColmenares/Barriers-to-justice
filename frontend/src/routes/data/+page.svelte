@@ -106,21 +106,21 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-[var(--color-accent)] transform hover:scale-105 transition-transform duration-300">
           <div class="text-center">
-            <div class="text-5xl font-bold text-[var(--color-accent)] mb-2" id="success-with-rep">45.3%</div>
+            <div class="text-5xl font-bold text-[var(--color-accent)] mb-2" id="success-with-rep">—</div>
             <div class="text-lg font-semibold text-[var(--color-primary)] mb-2">Success Rate</div>
             <div class="text-sm text-[var(--color-text-secondary)]">With legal representation</div>
           </div>
         </div>
         <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-[var(--color-secondary)] transform hover:scale-105 transition-transform duration-300">
           <div class="text-center">
-            <div class="text-5xl font-bold text-[var(--color-secondary)] mb-2" id="success-without-rep">0.8%</div>
+            <div class="text-5xl font-bold text-[var(--color-secondary)] mb-2" id="success-without-rep">—</div>
             <div class="text-lg font-semibold text-[var(--color-primary)] mb-2">Success Rate</div>
             <div class="text-sm text-[var(--color-text-secondary)]">Without representation</div>
           </div>
         </div>
         <div class="bg-white rounded-2xl shadow-xl p-8 border-l-8 border-[var(--color-primary)] transform hover:scale-105 transition-transform duration-300">
           <div class="text-center">
-            <div class="text-5xl font-bold text-[var(--color-primary)] mb-2" id="barriers-stat">75%</div>
+            <div class="text-5xl font-bold text-[var(--color-primary)] mb-2" id="barriers-stat">—</div>
             <div class="text-lg font-semibold text-[var(--color-primary)] mb-2">Face Barriers</div>
             <div class="text-sm text-[var(--color-text-secondary)]">To accessing legal aid</div>
           </div>
@@ -133,24 +133,24 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div class="space-y-6">
             <div class="flex items-start group">
-              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
               </div>
-              <div>
+              <div class="flex-1">
                 <h4 class="font-semibold text-[var(--color-primary)] mb-2">Legal Representation Impact</h4>
                 <p class="text-[var(--color-text-secondary)]">Juveniles with legal representation are significantly more likely to receive favorable decisions.</p>
               </div>
             </div>
             
             <div class="flex items-start group">
-              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
               </div>
-              <div>
+              <div class="flex-1">
                 <h4 class="font-semibold text-[var(--color-primary)] mb-2">Policy Correlation</h4>
                 <p class="text-[var(--color-text-secondary)]">Major policy changes align with changes in representation rates and case outcomes.</p>
               </div>
@@ -159,24 +159,24 @@
           
           <div class="space-y-6">
             <div class="flex items-start group">
-              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
               </div>
-              <div>
+              <div class="flex-1">
                 <h4 class="font-semibold text-[var(--color-primary)] mb-2">Demographic Factors</h4>
                 <p class="text-[var(--color-text-secondary)]">Demographic characteristics affect outcomes, but representation remains the most reliable predictor.</p>
               </div>
             </div>
             
             <div class="flex items-start group">
-              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+              <div class="w-10 h-10 bg-[var(--color-accent)] rounded-full flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
               </div>
-              <div>
+              <div class="flex-1">
                 <h4 class="font-semibold text-[var(--color-primary)] mb-2">Systemic Barriers</h4>
                 <p class="text-[var(--color-text-secondary)]">Multiple interconnected systems create compounding challenges for vulnerable youth.</p>
               </div>
