@@ -60,15 +60,15 @@
 
   async function loadSummaryData() {
     try {
-      caseSummary = await apiService.getOverview();
+      caseSummary = await apiService.getBasicStatistics();
       updateKeyStats();
     } catch (err) {
       console.error('Summary data error:', err);
       // Fallback mínimo para no romper UI
       caseSummary = {
-        total_cases: 10000,
-        representation_rate: 35.0,
-        no_representation_rate: 1.0
+        total_cases_analyzed: 1000000,
+        success_with_representation: 50.0,
+        success_without_representation: 15.0
       };
       updateKeyStats();
     }
@@ -196,14 +196,14 @@
     const casesStat = document.getElementById('stat-cases');
     const timespanStat = document.getElementById('stat-timespan');
 
-    if (representationStat && caseSummary.representation_rate != null) {
-      representationStat.textContent = `${Number(caseSummary.representation_rate).toFixed(1)}%`;
+    if (representationStat && caseSummary.success_with_representation != null) {
+      representationStat.textContent = `${Number(caseSummary.success_with_representation).toFixed(1)}%`;
     }
-    if (noRepresentationStat && caseSummary.no_representation_rate != null) {
-      noRepresentationStat.textContent = `${Number(caseSummary.no_representation_rate).toFixed(1)}%`;
+    if (noRepresentationStat && caseSummary.success_without_representation != null) {
+      noRepresentationStat.textContent = `${Number(caseSummary.success_without_representation).toFixed(1)}%`;
     }
-    if (casesStat && caseSummary.total_cases != null) {
-      const n = Number(caseSummary.total_cases);
+    if (casesStat && caseSummary.total_cases_analyzed != null) {
+      const n = Number(caseSummary.total_cases_analyzed);
       casesStat.textContent =
         n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M+` :
         n >= 1_000 ? `${(n / 1_000).toFixed(1)}K+` :
