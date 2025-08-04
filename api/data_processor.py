@@ -327,14 +327,18 @@ def process_analysis_data():
         
         return True  # Return True to prevent further explosions
 
-def get_data_statistics():
-    """Calculate real statistics from the loaded data"""
-    if not cache.is_loaded() or cache.get('juvenile_cases') is None:
-        return None
-    
-    try:
+def get_data_statistics(juvenile_cases_data=None):
+    """Calculate real statistics from the loaded data or provided data"""
+    if juvenile_cases_data is None:
+        if not cache.is_loaded() or cache.get('juvenile_cases') is None:
+            return None
         juvenile_cases = cache.get('juvenile_cases')
         reps_assigned = cache.get('reps_assigned')
+    else:
+        juvenile_cases = juvenile_cases_data
+        reps_assigned = cache.get('reps_assigned')  # Use cached reps data
+    
+    try:
         
         # Calculate basic statistics
         total_cases = len(juvenile_cases)

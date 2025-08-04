@@ -160,7 +160,15 @@ def representation_outcomes():
         if not load_data():
             return jsonify({"error": "Failed to load or process data"}), 500
         
-        chart_data = generate_representation_outcomes_chart()
+        # Get filters from request parameters
+        from flask import request
+        filters = {
+            'time_period': request.args.get('time_period', 'all'),
+            'representation': request.args.get('representation', 'all'),
+            'case_type': request.args.get('case_type', 'all')
+        }
+        
+        chart_data = generate_representation_outcomes_chart(filters)
         if "error" in chart_data:
             return jsonify(chart_data), 500
         
@@ -175,7 +183,15 @@ def time_series_analysis():
         if not load_data():
             return jsonify({"error": "Failed to load or process data"}), 500
         
-        chart_data = generate_time_series_chart()
+        # Get filters from request parameters
+        from flask import request
+        filters = {
+            'time_period': request.args.get('time_period', 'all'),
+            'representation': request.args.get('representation', 'all'),
+            'case_type': request.args.get('case_type', 'all')
+        }
+        
+        chart_data = generate_time_series_chart(filters)
         if "error" in chart_data:
             return jsonify(chart_data), 500
         
@@ -190,7 +206,15 @@ def chi_square_analysis():
         if not load_data():
             return jsonify({"error": "Failed to load or process data"}), 500
         
-        results = generate_chi_square_analysis()
+        # Get filters from request parameters
+        from flask import request
+        filters = {
+            'time_period': request.args.get('time_period', 'all'),
+            'representation': request.args.get('representation', 'all'),
+            'case_type': request.args.get('case_type', 'all')
+        }
+        
+        results = generate_chi_square_analysis(filters)
         return jsonify(results)
         
     except Exception as e:
@@ -202,7 +226,15 @@ def outcome_percentages():
         if not load_data():
             return jsonify({"error": "Failed to load or process data"}), 500
         
-        chart_data = generate_outcome_percentages_chart()
+        # Get filters from request parameters
+        from flask import request
+        filters = {
+            'time_period': request.args.get('time_period', 'all'),
+            'representation': request.args.get('representation', 'all'),
+            'case_type': request.args.get('case_type', 'all')
+        }
+        
+        chart_data = generate_outcome_percentages_chart(filters)
         if "error" in chart_data:
             return jsonify(chart_data), 500
         
@@ -217,7 +249,15 @@ def countries_chart():
         if not load_data():
             return jsonify({"error": "Failed to load or process data"}), 500
         
-        chart_data = generate_countries_chart()
+        # Get filters from request parameters
+        from flask import request
+        filters = {
+            'time_period': request.args.get('time_period', 'all'),
+            'representation': request.args.get('representation', 'all'),
+            'case_type': request.args.get('case_type', 'all')
+        }
+        
+        chart_data = generate_countries_chart(filters)
         if "error" in chart_data:
             return jsonify(chart_data), 500
         

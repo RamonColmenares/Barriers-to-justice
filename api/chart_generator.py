@@ -15,12 +15,77 @@ except ImportError:
     from config import START_DATE, ADMIN_CHANGES
     from models import cache
 
-def generate_representation_outcomes_chart():
+def apply_filters(data, filters):
+    """Apply filters to the dataset based on request parameters"""
+    if data is None or data.empty:
+        return data
+    
+    filtered_data = data.copy()
+    
+    # Time period filter - use the appropriate date column
+    if filters.get('time_period') and filters['time_period'] != 'all':
+        # Determine which date column to use
+        date_column = None
+        if 'hearing_date_combined' in filtered_data.columns:
+            date_column = 'hearing_date_combined'
+        elif 'LATEST_HEARING' in filtered_data.columns:
+            date_column = 'LATEST_HEARING'
+        
+        if date_column:
+            # Ensure the date column is datetime
+            if not pd.api.types.is_datetime64_any_dtype(filtered_data[date_column]):
+                filtered_data[date_column] = pd.to_datetime(filtered_data[date_column])
+            
+            if filters['time_period'] == 'trump1':
+                # Trump I (2018-2020)
+                filtered_data = filtered_data[
+                    (filtered_data[date_column] >= '2018-01-01') & 
+                    (filtered_data[date_column] <= '2020-12-31')
+                ]
+            elif filters['time_period'] == 'biden':
+                # Biden (2021-2024)
+                filtered_data = filtered_data[
+                    (filtered_data[date_column] >= '2021-01-01') & 
+                    (filtered_data[date_column] <= '2024-12-31')
+                ]
+            elif filters['time_period'] == 'trump2':
+                # Trump II (2025)
+                filtered_data = filtered_data[
+                    filtered_data[date_column] >= '2025-01-01'
+                ]
+    
+    # Representation filter
+    if filters.get('representation') and filters['representation'] != 'all':
+        if 'HAS_LEGAL_REP' in filtered_data.columns:
+            if filters['representation'] == 'represented':
+                # Check different possible values for represented
+                possible_yes_values = ['Yes', 'Has Legal Representation', 'Y', '1', 1, True]
+                filtered_data = filtered_data[filtered_data['HAS_LEGAL_REP'].isin(possible_yes_values)]
+            elif filters['representation'] == 'unrepresented':
+                # Check different possible values for unrepresented
+                possible_no_values = ['No', 'No Legal Representation', 'N', '0', 0, False]
+                filtered_data = filtered_data[filtered_data['HAS_LEGAL_REP'].isin(possible_no_values)]
+    
+    # Case type filter (this would need to be implemented based on available data)
+    if filters.get('case_type') and filters['case_type'] != 'all':
+        # This would depend on what case type fields are available in the data
+        # For now, we'll skip this filter
+        pass
+    
+    return filtered_data
+
+def generate_representation_outcomes_chart(filters=None):
     """Generate Plotly chart for representation vs outcomes (EXACTLY like notebook)"""
     analysis_filtered = cache.get('analysis_filtered')
     
     if analysis_filtered is None or analysis_filtered.empty:
         return {"error": "No analysis data available"}
+    
+    # Apply filters if provided
+    if filters:
+        analysis_filtered = apply_filters(analysis_filtered, filters)
+        if analysis_filtered.empty:
+            return {"error": "No data available for the selected filters"}
     
     try:
         print("Generating representation outcomes chart EXACTLY like notebook...")
@@ -69,7 +134,7 @@ def generate_representation_outcomes_chart():
                     marker_color=colors.get(outcome, '#888888'),
                     text=[f"{p:.1f}%" for p in percentages],
                     textposition='inside',
-                    textfont=dict(color='white', size=12, weight='bold')
+                    textfont=dict(color='white', size=12)
                 ))
         
         # Update layout EXACTLY like notebook
@@ -139,12 +204,18 @@ def generate_representation_outcomes_chart():
         traceback.print_exc()
         return {"error": f"Chart generation error: {str(e)}"}
 
-def generate_outcome_percentages_chart():
+def generate_outcome_percentages_chart(filters=None):
     """Generate the percentage breakdown chart EXACTLY like notebook (stacked bar chart)"""
     analysis_filtered = cache.get('analysis_filtered')
     
     if analysis_filtered is None or analysis_filtered.empty:
         return {"error": "No analysis data available"}
+    
+    # Apply filters if provided
+    if filters:
+        analysis_filtered = apply_filters(analysis_filtered, filters)
+        if analysis_filtered.empty:
+            return {"error": "No data available for the selected filters"}
     
     try:
         print("Generating outcome percentages chart EXACTLY like notebook...")
@@ -168,7 +239,7 @@ def generate_outcome_percentages_chart():
         # Colors for the stacked chart (using Set2 colormap style)
         colors = {
             'Favorable': '#66C2A5',  # Green
-            'Unfavorable': '#FC8D62'  # Orange/Red
+            'Unfavorable': "#FC6262"  # Orange/Red
         }
         
         categories = percentage_data.index.tolist()
@@ -183,7 +254,7 @@ def generate_outcome_percentages_chart():
                     marker_color=colors.get(outcome, '#888888'),
                     text=[f"{p:.1f}%" for p in percentage_data[outcome]],
                     textposition='inside',
-                    textfont=dict(color='white', size=12, weight='bold')
+                    textfont=dict(color='white', size=12)
                 ))
         
         # Update layout EXACTLY like notebook
@@ -252,12 +323,18 @@ def generate_outcome_percentages_chart():
         traceback.print_exc()
         return {"error": f"Percentage chart generation error: {str(e)}"}
 
-def generate_time_series_chart():
+def generate_time_series_chart(filters=None):
     """Generate Plotly time series chart with focused timeframe exactly like notebook"""
     analysis_filtered = cache.get('analysis_filtered')
     
     if analysis_filtered is None or analysis_filtered.empty:
         return {"error": "No analysis data available"}
+    
+    # Apply filters if provided
+    if filters:
+        analysis_filtered = apply_filters(analysis_filtered, filters)
+        if analysis_filtered.empty:
+            return {"error": "No data available for the selected filters"}
     
     try:
         # Filter data with valid dates (like notebook) - use hearing_date_combined column
@@ -382,7 +459,7 @@ def generate_time_series_chart():
     except Exception as e:
         return {"error": f"Chart generation error: {str(e)}"}
 
-def generate_chi_square_analysis():
+def generate_chi_square_analysis(filters=None):
     """Generate chi-square analysis results (like notebook) - handle empty data gracefully"""
     analysis_filtered = cache.get('analysis_filtered')
     
@@ -415,6 +492,39 @@ def generate_chi_square_analysis():
                 'odds_interpretation': "No data available for analysis"
             }
         }
+    
+    # Apply filters if provided
+    if filters:
+        analysis_filtered = apply_filters(analysis_filtered, filters)
+        if analysis_filtered.empty:
+            return {
+                "message": "No data available for the selected filters",
+                "representation_by_era": {
+                    'chi_square': 0.0,
+                    'p_value': 1.0,
+                    'degrees_of_freedom': 0,
+                    'cramer_v': 0.0,
+                    'significant': False,
+                    'contingency_table': {},
+                    'interpretation': "No data available for selected filters"
+                },
+                "outcomes_by_representation": {
+                    'chi_square': 0.0,
+                    'p_value': 1.0,
+                    'degrees_of_freedom': 0,
+                    'cramer_v': 0.0,
+                    'significant': False,
+                    'odds_ratio': 0.0,
+                    'contingency_table': {},
+                    'percentages': {
+                        'data': {},
+                        'with_representation': {'favorable': 0, 'unfavorable': 0},
+                        'without_representation': {'favorable': 0, 'unfavorable': 0}
+                    },
+                    'interpretation': "No data available for selected filters",
+                    'odds_interpretation': "No data available for selected filters"
+                }
+            }
     
     results = {}
     
@@ -628,15 +738,27 @@ def generate_chi_square_analysis():
     
     return results
 
-def generate_countries_chart():
+def generate_countries_chart(filters=None):
     """Generate Plotly chart for top countries by case volume with full country names in hover"""
     try:
         from .data_processor import get_data_statistics
     except ImportError:
         from data_processor import get_data_statistics
     
-    # Get statistics which includes top nationalities
-    stats = get_data_statistics()
+    # If filters are provided, we need to apply them to the data first
+    if filters:
+        juvenile_cases = cache.get('juvenile_cases')
+        if juvenile_cases is not None:
+            filtered_data = apply_filters(juvenile_cases, filters)
+            if filtered_data.empty:
+                return {"error": "No data available for the selected filters"}
+            # Calculate statistics for filtered data
+            stats = get_data_statistics(filtered_data)
+        else:
+            stats = get_data_statistics()
+    else:
+        # Get statistics which includes top nationalities
+        stats = get_data_statistics()
     
     if stats is None or 'nationalities' not in stats:
         return {"error": "No nationality data available"}
@@ -808,82 +930,3 @@ def generate_countries_chart():
         import traceback
         traceback.print_exc()
         return {"error": f"Countries chart generation error: {str(e)}"}
-
-def generate_outcome_percentages_chart():
-    """Generate the percentage breakdown chart EXACTLY like notebook"""
-    analysis_filtered = cache.get('analysis_filtered')
-    
-    if analysis_filtered is None or analysis_filtered.empty:
-        return {"error": "No analysis data available"}
-    
-    try:
-        # Calculate percentages exactly like notebook
-        percentage_data = pd.crosstab(
-            analysis_filtered['HAS_LEGAL_REP'],
-            analysis_filtered['BINARY_OUTCOME'], 
-            normalize='index'
-        ) * 100
-        
-        # Create Plotly figure
-        fig = go.Figure()
-        
-        # Add bars for each outcome
-        for outcome in percentage_data.columns:
-            color = '#10B981' if outcome == 'Favorable' else '#EF4444'
-            fig.add_trace(go.Bar(
-                name=outcome,
-                x=percentage_data.index,
-                y=percentage_data[outcome],
-                marker_color=color,
-                text=[f"{p:.1f}%" for p in percentage_data[outcome]],
-                textposition='inside',
-                textfont=dict(color='white', size=12)
-            ))
-        
-        # Update layout
-        fig.update_layout(
-            title={
-                'text': 'Case Outcome Percentages by Legal Representation Status',
-                'x': 0.5,
-                'font': {'size': 16, 'family': 'Arial, sans-serif'}
-            },
-            barmode='stack',
-            xaxis={
-                'title': 'Legal Representation',
-                'title_font': {'size': 14}
-            },
-            yaxis={
-                'title': 'Percentage',
-                'title_font': {'size': 14},
-                'range': [0, 100]
-            },
-            showlegend=True,
-            legend=dict(
-                title='Case Outcome',
-                orientation='v',
-                x=1.05,
-                y=1
-            ),
-            margin=dict(t=60, l=60, r=30, b=80),
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            font=dict(family='Arial, sans-serif'),
-            width=800,
-            height=500
-        )
-        
-        # Convert to JSON format
-        chart_data = {
-            'data': fig.data,
-            'layout': fig.layout,
-            'config': {
-                'responsive': True,
-                'displayModeBar': True,
-                'modeBarButtonsToRemove': ['pan2d', 'lasso2d', 'select2d'],
-                'displaylogo': False
-            }
-        }
-        return json.loads(plotly.utils.PlotlyJSONEncoder().encode(chart_data))
-        
-    except Exception as e:
-        return {"error": f"Chart generation error: {str(e)}"}

@@ -80,8 +80,11 @@
             </select>
           </div>
           <div class="flex items-end">
-            <button id="updateDashboard" class="w-full bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] transition-colors">
+            <button id="updateDashboard" class="w-full bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] transition-colors mr-2">
               Update Charts
+            </button>
+            <button id="clearFilters" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+              Clear Filters
             </button>
           </div>
         </div>
@@ -226,10 +229,21 @@
     
     // Add event listeners for filters
     document.getElementById('updateDashboard')?.addEventListener('click', updateDashboard);
+    document.getElementById('clearFilters')?.addEventListener('click', clearFilters);
     
     // Make retry function globally available for error buttons
     window.retryDataLoad = retryDataLoad;
   });
+
+  function clearFilters() {
+    // Reset all filter dropdowns
+    document.getElementById('timePeriodFilter').value = 'all';
+    document.getElementById('representationFilter').value = 'all';
+    document.getElementById('caseTypeFilter').value = 'all';
+    
+    // Reload dashboard with default filters
+    loadDashboard();
+  }
 
   async function loadDashboard() {
     isLoading = true;
@@ -293,9 +307,13 @@
     }
   }
 
-  async function loadRepresentationOutcomesChart() {
+  async function loadRepresentationOutcomesChart(queryString = '') {
     try {
-      const response = await fetch(`${API_BASE_URL}/findings/outcome-percentages`);
+      const url = queryString ? 
+        `${API_BASE_URL}/findings/outcome-percentages?${queryString}` : 
+        `${API_BASE_URL}/findings/outcome-percentages`;
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load representation outcomes chart');
       
       const plotlyConfig = await response.json();
@@ -319,9 +337,13 @@
     }
   }
 
-  async function loadTimeSeriesChart() {
+  async function loadTimeSeriesChart(queryString = '') {
     try {
-      const response = await fetch(`${API_BASE_URL}/findings/time-series`);
+      const url = queryString ? 
+        `${API_BASE_URL}/findings/time-series?${queryString}` : 
+        `${API_BASE_URL}/findings/time-series`;
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load time series chart');
       
       const plotlyConfig = await response.json();
@@ -345,9 +367,13 @@
     }
   }
 
-  async function loadChiSquareResults() {
+  async function loadChiSquareResults(queryString = '') {
     try {
-      const response = await fetch(`${API_BASE_URL}/findings/chi-square`);
+      const url = queryString ? 
+        `${API_BASE_URL}/findings/chi-square?${queryString}` : 
+        `${API_BASE_URL}/findings/chi-square`;
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load chi-square analysis');
       
       const data = await response.json();
@@ -446,9 +472,13 @@
     }
   }
 
-  async function loadCountriesChart() {
+  async function loadCountriesChart(queryString = '') {
     try {
-      const response = await fetch(`${API_BASE_URL}/findings/countries`);
+      const url = queryString ? 
+        `${API_BASE_URL}/findings/countries?${queryString}` : 
+        `${API_BASE_URL}/findings/countries`;
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to load countries chart');
       
       const plotlyConfig = await response.json();
@@ -496,13 +526,92 @@
     isLoading = true;
     
     try {
-      // For now, just reload the dashboard
-      await loadDashboard();
+      // Build query parameters for API calls
+      const params = new URLSearchParams();
+      if (filters.timePeriod !== 'all') params.append('time_period', filters.timePeriod);
+      if (filters.representation !== 'all') params.append('representation', filters.representation);
+      if (filters.caseType !== 'all') params.append('case_type', filters.caseType);
+      
+      const queryString = params.toString();
+      
+      // Show filter info
+      showFilterInfo(filters);
+      
+      // Load charts with filters
+      await Promise.all([
+        loadRepresentationOutcomesChart(queryString),
+        loadTimeSeriesChart(queryString),
+        loadChiSquareResults(queryString),
+        loadCountriesChart(queryString)
+      ]);
+      
       isLoading = false;
     } catch (err) {
       console.error('Error updating dashboard:', err);
       error = err.message;
       isLoading = false;
+    }
+  }
+
+  function showFilterInfo(filters) {
+    const hasFilters = filters.timePeriod !== 'all' || filters.representation !== 'all' || filters.caseType !== 'all';
+    
+    let filterText = '';
+    if (hasFilters) {
+      const filterParts = [];
+      if (filters.timePeriod !== 'all') {
+        const periods = {
+          'trump1': 'Trump I (2018-2020)',
+          'biden': 'Biden (2021-2024)', 
+          'trump2': 'Trump II (2025)'
+        };
+        filterParts.push(`Period: ${periods[filters.timePeriod]}`);
+      }
+      if (filters.representation !== 'all') {
+        const reps = {
+          'represented': 'With Representation',
+          'unrepresented': 'Without Representation'
+        };
+        filterParts.push(`Status: ${reps[filters.representation]}`);
+      }
+      if (filters.caseType !== 'all') {
+        filterParts.push(`Type: ${filters.caseType}`);
+      }
+      filterText = 'Filters Applied: ' + filterParts.join(' | ');
+    } else {
+      filterText = 'Showing All Data';
+    }
+    
+    // Update or create filter info element
+    let filterInfo = document.getElementById('filterInfo');
+    if (!filterInfo) {
+      filterInfo = document.createElement('div');
+      filterInfo.id = 'filterInfo';
+      filterInfo.className = 'text-center p-3 mb-4 text-sm font-medium rounded-lg';
+      const dashboardContainer = document.querySelector('.grid.grid-cols-1.gap-8');
+      dashboardContainer.parentNode.insertBefore(filterInfo, dashboardContainer);
+    }
+    
+    if (hasFilters) {
+      filterInfo.className = 'text-center p-3 mb-4 text-sm font-medium rounded-lg bg-blue-100 border border-blue-300 text-blue-800';
+      filterInfo.innerHTML = `
+        <div class="flex items-center justify-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+          </svg>
+          ${filterText}
+        </div>
+      `;
+    } else {
+      filterInfo.className = 'text-center p-3 mb-4 text-sm font-medium rounded-lg bg-gray-100 border border-gray-300 text-gray-600';
+      filterInfo.innerHTML = `
+        <div class="flex items-center justify-center">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          ${filterText}
+        </div>
+      `;
     }
   }
 
