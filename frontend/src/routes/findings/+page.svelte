@@ -64,14 +64,25 @@
       updateKeyStats();
     } catch (err) {
       console.error('Summary data error:', err);
-      // Fallback mínimo para no romper UI
-      caseSummary = {
-        total_cases_analyzed: 1000000,
-        success_with_representation: 50.0,
-        success_without_representation: 15.0
-      };
-      updateKeyStats();
+      // When API fails, show large hyphens instead of fallback data
+      caseSummary = null;
+      showPlaceholderStats();
     }
+  }
+
+  function showPlaceholderStats() {
+    if (!browser) return;
+
+    const representationStat = document.getElementById('stat-representation');
+    const noRepresentationStat = document.getElementById('stat-no-representation');
+    const casesStat = document.getElementById('stat-cases');
+    const timespanStat = document.getElementById('stat-timespan');
+
+    // Use large hyphens as placeholders when API doesn't work
+    if (representationStat) representationStat.textContent = '—';
+    if (noRepresentationStat) noRepresentationStat.textContent = '—';
+    if (casesStat) casesStat.textContent = '—';
+    if (timespanStat) timespanStat.textContent = '—';
   }
 
   // Cambio de filtros (compatibilidad: por prop o por evento)
@@ -212,19 +223,32 @@
 
     if (representationStat && caseSummary.success_with_representation != null) {
       representationStat.textContent = `${Number(caseSummary.success_with_representation).toFixed(1)}%`;
+    } else if (representationStat) {
+      representationStat.textContent = '—';
     }
+    
     if (noRepresentationStat && caseSummary.success_without_representation != null) {
       noRepresentationStat.textContent = `${Number(caseSummary.success_without_representation).toFixed(1)}%`;
+    } else if (noRepresentationStat) {
+      noRepresentationStat.textContent = '—';
     }
+    
     if (casesStat && caseSummary.total_cases_analyzed != null) {
       const n = Number(caseSummary.total_cases_analyzed);
       casesStat.textContent =
         n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M+` :
         n >= 1_000 ? `${(n / 1_000).toFixed(1)}K+` :
         n.toLocaleString();
+    } else if (casesStat) {
+      casesStat.textContent = '—';
     }
+    
     if (timespanStat) {
-      timespanStat.textContent = '7';
+      if (caseSummary && caseSummary.years_of_data != null) {
+        timespanStat.textContent = caseSummary.years_of_data;
+      } else {
+        timespanStat.textContent = '—';
+      }
     }
   }
 

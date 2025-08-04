@@ -345,9 +345,9 @@
   }
 
   function useFallbackValues() {
-    // Keep the original hardcoded values if API fails
-    document.getElementById('success-with-rep').textContent = '45.3%';
-    document.getElementById('success-without-rep').textContent = '0.8%';
-    document.getElementById('barriers-stat').textContent = '75%';
+    // Show large hyphens as placeholders when API fails
+    document.getElementById('success-with-rep').textContent = '—';
+    document.getElementById('success-without-rep').textContent = '—';
+    document.getElementById('barriers-stat').textContent = '—';
   }
 </script>
