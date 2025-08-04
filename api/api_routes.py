@@ -1,33 +1,25 @@
 """
 API route handlers for the juvenile immigration API
 """
-from flask import jsonify
+from flask import jsonify, request
 from datetime import datetime
+import boto3
+from botocore.exceptions import ClientError
+import os
 
-try:
-    from .data_loader import load_data, download_raw_files_from_google_drive, save_to_cache
-    from .data_processor import get_data_statistics, process_analysis_data
-    from .chart_generator import (
-        generate_representation_outcomes_chart,
-        generate_time_series_chart,
-        generate_chi_square_analysis,
-        generate_outcome_percentages_chart,
-        generate_countries_chart
-    )
-    from .basic_stats import get_basic_statistics
-    from .models import cache
-except ImportError:
-    from data_loader import load_data, download_raw_files_from_google_drive, save_to_cache
-    from data_processor import get_data_statistics, process_analysis_data
-    from chart_generator import (
-        generate_representation_outcomes_chart,
-        generate_time_series_chart,
-        generate_chi_square_analysis,
-        generate_outcome_percentages_chart,
-        generate_countries_chart
-    )
-    from basic_stats import get_basic_statistics
-    from models import cache
+# Local imports
+from .data_loader import load_data, download_raw_files_from_google_drive, save_to_cache
+from .data_processor import get_data_statistics, process_analysis_data
+from .chart_generator import (
+    generate_representation_outcomes_chart,
+    generate_time_series_chart,
+    generate_chi_square_analysis,
+    generate_outcome_percentages_chart,
+    generate_countries_chart
+)
+from .basic_stats import get_basic_statistics, get_filtered_statistics
+from .models import cache
+from .filters import Filters, filter_options
 
 def health():
     """Health check endpoint"""
@@ -38,6 +30,18 @@ def health():
         "version": "1.0.0"
     })
 
+
+def meta_options():
+    """Return available filter options derived from the data"""
+    try:
+        if not load_data():
+            return jsonify({"error": "No data loaded"}), 500
+        analysis_filtered = cache.get('analysis_filtered')
+        from .filters import filter_options
+        opts = filter_options(analysis_filtered if analysis_filtered is not None else cache.get('merged_data'))
+        return jsonify({"options": opts})
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 def get_overview():
     """Get overview statistics from real data"""
     try:
@@ -161,12 +165,8 @@ def representation_outcomes():
             return jsonify({"error": "Failed to load or process data"}), 500
         
         # Get filters from request parameters
-        from flask import request
-        filters = {
-            'time_period': request.args.get('time_period', 'all'),
-            'representation': request.args.get('representation', 'all'),
-            'case_type': request.args.get('case_type', 'all')
-        }
+        from .filters import Filters
+        filters = Filters.from_query(request.args)
         
         chart_data = generate_representation_outcomes_chart(filters)
         if "error" in chart_data:
@@ -184,12 +184,8 @@ def time_series_analysis():
             return jsonify({"error": "Failed to load or process data"}), 500
         
         # Get filters from request parameters
-        from flask import request
-        filters = {
-            'time_period': request.args.get('time_period', 'all'),
-            'representation': request.args.get('representation', 'all'),
-            'case_type': request.args.get('case_type', 'all')
-        }
+        from .filters import Filters
+        filters = Filters.from_query(request.args)
         
         chart_data = generate_time_series_chart(filters)
         if "error" in chart_data:
@@ -207,12 +203,8 @@ def chi_square_analysis():
             return jsonify({"error": "Failed to load or process data"}), 500
         
         # Get filters from request parameters
-        from flask import request
-        filters = {
-            'time_period': request.args.get('time_period', 'all'),
-            'representation': request.args.get('representation', 'all'),
-            'case_type': request.args.get('case_type', 'all')
-        }
+        from .filters import Filters
+        filters = Filters.from_query(request.args)
         
         results = generate_chi_square_analysis(filters)
         return jsonify(results)
@@ -227,12 +219,8 @@ def outcome_percentages():
             return jsonify({"error": "Failed to load or process data"}), 500
         
         # Get filters from request parameters
-        from flask import request
-        filters = {
-            'time_period': request.args.get('time_period', 'all'),
-            'representation': request.args.get('representation', 'all'),
-            'case_type': request.args.get('case_type', 'all')
-        }
+        from .filters import Filters
+        filters = Filters.from_query(request.args)
         
         chart_data = generate_outcome_percentages_chart(filters)
         if "error" in chart_data:
@@ -250,12 +238,8 @@ def countries_chart():
             return jsonify({"error": "Failed to load or process data"}), 500
         
         # Get filters from request parameters
-        from flask import request
-        filters = {
-            'time_period': request.args.get('time_period', 'all'),
-            'representation': request.args.get('representation', 'all'),
-            'case_type': request.args.get('case_type', 'all')
-        }
+        from .filters import Filters
+        filters = Filters.from_query(request.args)
         
         chart_data = generate_countries_chart(filters)
         if "error" in chart_data:
@@ -278,6 +262,27 @@ def basic_statistics():
             return jsonify(stats), 500
         
         return jsonify(stats)
+        
+    except Exception as e:
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
+
+def get_filtered_overview():
+    """Get overview statistics with filters applied"""
+    try:
+        # Load data if not already loaded
+        if not load_data():
+            return jsonify({"error": "Failed to load data"}), 500
+        
+        # Get filter parameters
+        from .filters import Filters
+        filters = Filters.from_query(request.args)
+        
+        # Get filtered statistics
+        filtered_stats = get_filtered_statistics(filters)
+        if filtered_stats is None:
+            return jsonify({"error": "Failed to calculate filtered statistics"}), 500
+        
+        return jsonify(filtered_stats)
         
     except Exception as e:
         return jsonify({"error": f"Server error: {str(e)}"}), 500

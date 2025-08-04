@@ -6,58 +6,49 @@ from flask import Flask
 from flask_cors import CORS
 
 # Import route handlers
-try:
-    from .api_routes import (
-        health,
-        get_overview,
-        load_data_endpoint,
-        force_reload_data,
-        data_status,
-        representation_outcomes,
-        time_series_analysis,
-        chi_square_analysis,
-        outcome_percentages,
-        countries_chart,
-        basic_statistics
-    )
-    from .config import DEBUG
-except ImportError:
-    from api_routes import (
-        health,
-        get_overview,
-        load_data_endpoint,
-        force_reload_data,
-        data_status,
-        representation_outcomes,
-        time_series_analysis,
-        chi_square_analysis,
-        outcome_percentages,
-        countries_chart,
-        basic_statistics
-    )
-    from config import DEBUG
+from .api_routes import (
+    health,
+    get_overview,
+    get_filtered_overview,
+    load_data_endpoint,
+    force_reload_data,
+    data_status,
+    representation_outcomes,
+    time_series_analysis,
+    chi_square_analysis,
+    outcome_percentages,
+    countries_chart,
+    basic_statistics,
+    meta_options
+)
+from .config import DEBUG
 
 app = Flask(__name__)
 
 # Configure CORS to allow frontend communication
 # Allow both CloudFront and direct EC2 access
+import os, re
+frontend_origin = os.getenv('FRONTEND_ORIGIN')
 allowed_origins = [
-    'https://d2qqofrfkbwcrl.cloudfront.net',
-    'https://54-145-92-66.sslip.io',
-    'http://localhost:3000',  # For local development
-    'http://localhost:5173'   # For Vite dev server
+    origin for origin in [
+        frontend_origin,
+        'https://d2qqofrfkbwcrl.cloudfront.net',
+        'http://localhost:3000',
+        'http://localhost:5173'
+    ] if origin
 ]
+# allow any *.sslip.io origin dynamically by overriding CORS
 
-CORS(app, 
-     origins=allowed_origins,
-     methods=['GET', 'POST', 'OPTIONS'], 
-     allow_headers=['Content-Type', 'Authorization'],
-     supports_credentials=False)
+CORS(app, resources={r"/api/*": {"origins": allowed_origins + [r"https://.*\.sslip\.io"]}}, methods=['GET', 'POST', 'OPTIONS'], allow_headers=['Content-Type', 'Authorization'], supports_credentials=False)
 
 # Configuration
 app.config['DEBUG'] = DEBUG
 
 # Register routes
+@app.route('/api/meta/options')
+def meta_options_route():
+    return meta_options()
+
 @app.route('/api/health')
 def health_route():
     return health()
@@ -65,6 +56,10 @@ def health_route():
 @app.route('/api/overview')
 def overview_route():
     return get_overview()
+
+@app.route('/api/overview/filtered')
+def filtered_overview_route():
+    return get_filtered_overview()
 
 @app.route('/api/load-data')
 def load_data_route():

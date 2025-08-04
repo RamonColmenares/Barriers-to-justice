@@ -11,12 +11,9 @@ import os
 import traceback
 from datetime import datetime
 
-try:
-    from .config import CACHE_FILES, GOOGLE_DRIVE_FILES, RAW_DATA_FILES, get_cache_dir
-    from .models import cache
-except ImportError:
-    from config import CACHE_FILES, GOOGLE_DRIVE_FILES, RAW_DATA_FILES, get_cache_dir
-    from models import cache
+# Local imports
+from .config import CACHE_FILES, GOOGLE_DRIVE_FILES, RAW_DATA_FILES, get_cache_dir
+from .models import cache
 
 def check_raw_files_in_cache():
     """Check if raw data files exist in cache directory"""

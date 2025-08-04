@@ -8,12 +8,10 @@ import plotly.graph_objects as go
 import plotly.utils
 from scipy import stats
 
-try:
-    from .config import START_DATE, ADMIN_CHANGES
-    from .models import cache
-except ImportError:
-    from config import START_DATE, ADMIN_CHANGES
-    from models import cache
+# Local imports
+from .config import START_DATE, ADMIN_CHANGES
+from .models import cache
+from .filters import apply_filters, Filters
 
 def apply_filters(data, filters):
     """Apply filters to the dataset based on request parameters"""

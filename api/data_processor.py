@@ -6,12 +6,10 @@ import numpy as np
 import traceback
 from datetime import datetime
 
-try:
-    from .config import FAVORABLE_DECISIONS, UNFAVORABLE_DECISIONS, OTHER_DECISIONS
-    from .models import cache
-except ImportError:
-    from config import FAVORABLE_DECISIONS, UNFAVORABLE_DECISIONS, OTHER_DECISIONS
-    from models import cache
+# Local imports
+from .config import FAVORABLE_DECISIONS, UNFAVORABLE_DECISIONS, OTHER_DECISIONS
+from .models import cache
+from .filters import apply_filters, Filters
 
 def determine_policy_era(date):
     """Determine policy era based on date"""
@@ -393,4 +391,49 @@ def get_data_statistics(juvenile_cases_data=None):
         
     except Exception as e:
         print(f"Error calculating statistics: {str(e)}")
+        return None
+
+def apply_filters(data, filters):
+    """Apply filters to the dataset"""
+    try:
+        if data is None or data.empty:
+            return None
+        
+        filtered_data = data.copy()
+        
+        # Apply time period filter
+        if filters.get('time_period') != 'all' and 'LATEST_HEARING' in filtered_data.columns:
+            time_period = filters['time_period']
+            if time_period == 'trump1':
+                # Trump I (2018-2020)
+                mask = (filtered_data['LATEST_HEARING'].dt.year >= 2018) & (filtered_data['LATEST_HEARING'].dt.year <= 2020)
+                filtered_data = filtered_data[mask]
+            elif time_period == 'biden':
+                # Biden (2021-2024)
+                mask = (filtered_data['LATEST_HEARING'].dt.year >= 2021) & (filtered_data['LATEST_HEARING'].dt.year <= 2024)
+                filtered_data = filtered_data[mask]
+            elif time_period == 'trump2':
+                # Trump II (2025+)
+                mask = filtered_data['LATEST_HEARING'].dt.year >= 2025
+                filtered_data = filtered_data[mask]
+        
+        # Apply representation filter
+        if filters.get('representation') != 'all' and 'HAS_LEGAL_REP' in filtered_data.columns:
+            representation = filters['representation']
+            if representation == 'represented':
+                filtered_data = filtered_data[filtered_data['HAS_LEGAL_REP'] == 'Has Legal Representation']
+            elif representation == 'unrepresented':
+                filtered_data = filtered_data[filtered_data['HAS_LEGAL_REP'] == 'No Legal Representation']
+        
+        # Apply case type filter (if we have case type data)
+        if filters.get('case_type') != 'all':
+            case_type = filters['case_type']
+            # This would require mapping case types to decision codes or case categories
+            # For now, we'll skip this filter until we have proper case type categorization
+            pass
+        
+        return filtered_data
+        
+    except Exception as e:
+        print(f"Error applying filters: {str(e)}")
         return None
