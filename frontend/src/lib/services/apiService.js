@@ -44,7 +44,6 @@ class ApiService {
   async getFromCacheOrPending(cacheKey, url, options) {
     // Check if request is already pending
     if (this.pendingRequests.has(cacheKey)) {
-      console.log(`Request already pending for ${url}, waiting for it...`);
       return this.pendingRequests.get(cacheKey);
     }
 
@@ -52,7 +51,6 @@ class ApiService {
     if (this.requestCache.has(cacheKey)) {
       const cachedData = this.requestCache.get(cacheKey);
       if (Date.now() - cachedData.timestamp < this.cacheTimeout) {
-        console.log(`Using cached data for ${url}`);
         return cachedData.data;
       } else {
         this.requestCache.delete(cacheKey);
@@ -104,14 +102,20 @@ class ApiService {
     
     for (let i = 0; i <= retries; i++) {
       try {
-        console.log(`Making request to ${url} (attempt ${i + 1})`);
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
         const response = await fetch(url, {
           ...options,
+          signal: controller.signal,
           headers: {
             'Content-Type': 'application/json',
             ...options.headers
           }
         });
+        
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -120,7 +124,13 @@ class ApiService {
         return await response.json();
       } catch (error) {
         lastError = error;
-        console.warn(`Attempt ${i + 1} failed for ${url}:`, error.message);
+        
+        // Handle specific error types
+        if (error instanceof Error && error.name === 'AbortError') {
+          lastError = new Error('Request timeout - server may be unavailable');
+        } else if (error instanceof Error && (error.message.includes('Failed to fetch') || error.message.includes('Network request failed'))) {
+          lastError = new Error('Network error - please check your connection');
+        }
         
         if (i < retries) {
           // Wait before retrying

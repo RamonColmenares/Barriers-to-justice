@@ -8,7 +8,8 @@
   export let onFilterChange = null; // Optional callback
 
   // State
-  let filters = filterService.getFilters();
+  let filters = filterService.getFilters();        // currently‑applied
+  let pendingFilters = { ...filters };             // user edits live here
   let availableOptions = null;
   let isLoading = true;
   let debounceTimeout = null;
@@ -19,21 +20,18 @@
   onMount(async () => {
     // Load filter options from API
     await filterService.loadFilterOptions();
+    pendingFilters = { ...filterService.getFilters() };
     
     // Subscribe to filter changes with debounce
     unsubscribe = filterService.subscribe((newFilters, options) => {
       filters = newFilters;
+      pendingFilters = { ...newFilters };
       availableOptions = options;
       isLoading = false;
       
-      // Debounce the callback to prevent multiple rapid calls
+      // Notify parent component of the change
       if (onFilterChange) {
-        if (debounceTimeout) {
-          clearTimeout(debounceTimeout);
-        }
-        debounceTimeout = setTimeout(() => {
-          onFilterChange(newFilters);
-        }, 300); // 300ms debounce
+        onFilterChange(newFilters);
       }
     });
     
@@ -54,17 +52,21 @@
 
   // Handle filter changes
   function handleFilterChange(filterType, value) {
-    filterService.setFilter(filterType, value);
+    pendingFilters = { ...pendingFilters, [filterType]: value };
   }
 
   function clearAllFilters() {
     filterService.clearFilters();
+    filters = filterService.getFilters();
+    pendingFilters = { ...filters };
   }
 
   function updateCharts() {
-    if (onFilterChange) {
-      onFilterChange(filters);
-    }
+    // Commit pending filters to the store
+    Object.entries(pendingFilters).forEach(([type, value]) =>
+      filterService.setFilter(type, value)
+    );
+    filters = { ...pendingFilters };
   }
 
   // Get display label for filter value
@@ -75,21 +77,15 @@
   }
 
   // Check if we have active filters
-  $: hasActiveFilters = filterService.hasActiveFilters();
+  $: hasActiveFilters = Object.values(pendingFilters).some(
+    (v) => v !== 'all' && v !== null && v !== undefined
+  );
 </script>
 
 <div class="filter-component">
   {#if showTitle}
-    <div class="flex items-center justify-between mb-4">
+    <div class="mb-4">
       <h3 class="text-lg font-semibold text-[var(--color-primary)]">Filter Data</h3>
-      {#if hasActiveFilters}
-        <button 
-          on:click={clearAllFilters}
-          class="text-sm text-[var(--color-secondary)] hover:text-[var(--color-primary)] transition-colors"
-        >
-          Clear All Filters
-        </button>
-      {/if}
     </div>
   {/if}
 
@@ -107,7 +103,7 @@
         </label>
         <select 
           id="timePeriodFilter" 
-          bind:value={filters.time_period}
+          bind:value={pendingFilters.time_period}
           on:change={(e) => handleFilterChange('time_period', e.target.value)}
           class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-colors"
         >
@@ -128,7 +124,7 @@
         </label>
         <select 
           id="representationFilter" 
-          bind:value={filters.representation}
+          bind:value={pendingFilters.representation}
           on:change={(e) => handleFilterChange('representation', e.target.value)}
           class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-colors"
         >
@@ -149,7 +145,7 @@
         </label>
         <select 
           id="caseTypeFilter" 
-          bind:value={filters.case_type}
+          bind:value={pendingFilters.case_type}
           on:change={(e) => handleFilterChange('case_type', e.target.value)}
           class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-colors"
         >
@@ -202,29 +198,6 @@
         {/if}
       </div>
     </div>
-
-    <!-- Active Filters Summary -->
-    {#if hasActiveFilters}
-      <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <p class="text-sm text-blue-800 font-medium mb-2">Active Filters:</p>
-        <div class="flex flex-wrap gap-2">
-          {#each filterService.getActiveFiltersSummary() as activeFilter}
-            <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-              {activeFilter.label}
-              <button 
-                on:click={() => handleFilterChange(activeFilter.type, 'all')}
-                class="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
-                title="Remove filter"
-              >
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                </svg>
-              </button>
-            </span>
-          {/each}
-        </div>
-      </div>
-    {/if}
   {/if}
 </div>
 

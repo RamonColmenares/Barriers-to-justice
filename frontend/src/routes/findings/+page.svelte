@@ -78,8 +78,13 @@
   async function handleFilterChange(newFilters) {
     // Create hash of filters to prevent duplicate calls
     const filterHash = JSON.stringify(newFilters);
-    if (filterHash === lastFilterHash || isLoadingCharts) {
-      console.log('Skipping duplicate filter change request');
+    if (filterHash === lastFilterHash) {
+      return;
+    }
+    
+    // If already loading, wait a bit and try again
+    if (isLoadingCharts) {
+      setTimeout(() => handleFilterChange(newFilters), 100);
       return;
     }
     
@@ -108,19 +113,20 @@
         chartStates[k].loading = false;
         chartStates[k].error = err?.message ?? 'Error';
       });
+      
+      // Show error state for all charts
+      showChartError('representationChart', 'Failed to load Success Rates chart');
+      showChartError('timelineChart', 'Failed to load Timeline Trends chart');
+      showChartError('demographicsChart', 'Failed to load Outcome Percentages chart');
+      showChartError('chiSquareResults', 'Failed to load Statistical Analysis');
+      showChartError('countriesChart', 'Failed to load Countries chart');
     } finally {
       isLoadingCharts = false;
     }
   }
 
   async function loadAllCharts(customFilters = null) {
-    if (isLoadingCharts && customFilters === currentFilters) {
-      console.log('Charts already loading, skipping duplicate request');
-      return;
-    }
-    
     try {
-      console.log('Loading charts with filters:', customFilters);
       const data = await apiService.getAllChartData(customFilters);
       
       // Handle each chart individually with proper error states
@@ -179,11 +185,19 @@
       }
     } catch (err) {
       console.error('Error loadAllCharts:', err);
-      // Set all charts to error state
+      // Set all charts to error state and show error UI
       Object.keys(chartStates).forEach(k => {
         chartStates[k].loading = false;
         chartStates[k].error = err?.message ?? 'Network error';
       });
+      
+      // Show error state for all charts
+      showChartError('representationChart', 'Failed to load Success Rates chart');
+      showChartError('timelineChart', 'Failed to load Timeline Trends chart');
+      showChartError('demographicsChart', 'Failed to load Outcome Percentages chart');
+      showChartError('chiSquareResults', 'Failed to load Statistical Analysis');
+      showChartError('countriesChart', 'Failed to load Countries chart');
+      
       throw err;
     }
   }
@@ -277,6 +291,10 @@
     try {
       const el = document.getElementById('representationChart');
       if (!browser || !window.Plotly || !payload || !el) return;
+      
+      // Clear any existing content (including loading messages)
+      el.innerHTML = '';
+      
       window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
       chartStates.representationOutcomes.loading = false;
     } catch (err) {
@@ -290,6 +308,10 @@
     try {
       const el = document.getElementById('timelineChart');
       if (!browser || !window.Plotly || !payload || !el) return;
+      
+      // Clear any existing content (including loading messages)
+      el.innerHTML = '';
+      
       window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
       chartStates.timeSeriesAnalysis.loading = false;
     } catch (err) {
@@ -303,6 +325,10 @@
     try {
       const el = document.getElementById('demographicsChart');
       if (!browser || !window.Plotly || !payload || !el) return;
+      
+      // Clear any existing content (including loading messages)
+      el.innerHTML = '';
+      
       window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
       chartStates.outcomePercentages.loading = false;
     } catch (err) {
@@ -316,6 +342,10 @@
     try {
       const el = document.getElementById('countriesChart');
       if (!browser || !window.Plotly || !payload || !el) return;
+      
+      // Clear any existing content (including loading messages)
+      el.innerHTML = '';
+      
       window.Plotly.newPlot(el, payload.data, { ...payload.layout, autosize: true, height: 500 }, basePlotConfig);
       chartStates.countriesChart.loading = false;
     } catch (err) {
@@ -332,6 +362,7 @@
 
       const safe = (v) => (v == null ? '—' : v);
 
+      // Clear any existing content (including loading messages)
       container.innerHTML = `
         <div class="space-y-6">
           <!-- Representation by Time Period -->
@@ -502,17 +533,17 @@
 
       <!-- Chart Grid -->
       <div class="grid grid-cols-1 gap-8">
-        <!-- Representation Success Rate Chart -->
+        <!-- Outcome Percentages Chart -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Success Rates by Representation Status</h3>
-          <div class="min-h-[500px] w-full" id="representationChart">
+          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Outcome Percentages</h3>
+          <div class="min-h-[500px] w-full" id="demographicsChart">
             <div class="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
               <div class="relative mb-6">
                 <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
                 <div class="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-indigo-300 rounded-full animate-pulse"></div>
               </div>
               <div class="text-center mb-4">
-                <p class="text-gray-700 font-medium mb-2">Loading Success Rates...</p>
+                <p class="text-gray-700 font-medium mb-2">Loading Outcome Percentages...</p>
                 <p class="text-gray-500 text-sm">Preparing your visualization...</p>
               </div>
               <div class="flex space-x-1">
@@ -535,28 +566,6 @@
               </div>
               <div class="text-center mb-4">
                 <p class="text-gray-700 font-medium mb-2">Loading Timeline Trends...</p>
-                <p class="text-gray-500 text-sm">Preparing your visualization...</p>
-              </div>
-              <div class="flex space-x-1">
-                <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0s;"></div>
-                <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
-                <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Outcome Percentages Chart -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-          <h3 class="text-xl font-bold text-[var(--color-primary)] mb-6">Outcome Percentages</h3>
-          <div class="min-h-[500px] w-full" id="demographicsChart">
-            <div class="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-8">
-              <div class="relative mb-6">
-                <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-                <div class="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-indigo-300 rounded-full animate-pulse"></div>
-              </div>
-              <div class="text-center mb-4">
-                <p class="text-gray-700 font-medium mb-2">Loading Outcome Percentages...</p>
                 <p class="text-gray-500 text-sm">Preparing your visualization...</p>
               </div>
               <div class="flex space-x-1">
