@@ -248,22 +248,24 @@ fi
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo tee /etc/nginx/sites-available/juvenile-api >/dev/null <<NGINX
 server {
-    listen 80;
-    server_name ${HOSTNAME_SSLIP};
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _ ${HOSTNAME_SSLIP};
 
     location / {
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 300;
         proxy_connect_timeout 60;
         proxy_send_timeout 300;
     }
 }
 NGINX
+
 
 sudo ln -sf /etc/nginx/sites-available/juvenile-api /etc/nginx/sites-enabled/juvenile-api
 sudo nginx -t && sudo systemctl reload nginx
@@ -285,10 +287,15 @@ fi
 
 echo "Nginx is serving: ${HOSTNAME_SSLIP}"
 
+
 # Clean up old Docker containers and images...
 sudo docker stop juvenile-api 2>/dev/null || true
 sudo docker rm juvenile-api 2>/dev/null || true
 sudo docker rmi juvenile-immigration-api 2>/dev/null || true
+
+sudo docker system prune -af --volumes || true
+sudo journalctl --vacuum-size=100M || true
+sudo apt-get clean -y || true
 
 # Build Docker image
 echo "Building Docker image with Python 3.13.4..."

@@ -16,13 +16,19 @@ from api.models import cache
 # Create Flask app
 app = Flask(__name__)
 
-CORS(app, origins=[
-    'https://d2qqofrfkbwcrl.cloudfront.net',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173'
-], supports_credentials=True)
+# Configure CORS with specific origins and headers
+CORS(app, 
+     origins=[
+         'https://d2qqofrfkbwcrl.cloudfront.net',
+         'https://54-84-88-142.sslip.io',
+         'http://localhost:5173',
+         'http://localhost:3000',
+         'http://127.0.0.1:5173',
+         '*'
+     ],
+     methods=['GET', 'POST', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization', 'Accept'],
+     supports_credentials=True)
 
 app.add_url_rule('/health', 'health', health, methods=['GET'])
 app.add_url_rule('/api/overview', 'get_overview', get_overview, methods=['GET'])
