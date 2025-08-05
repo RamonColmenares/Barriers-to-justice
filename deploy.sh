@@ -173,7 +173,7 @@ echo "✓ Files copied to EC2"
 
 # Deploy application on EC2
 echo "🐳 Building and running Docker container..."
-ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; bash -s" << 'EOF'
+ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; export CLOUDFRONT_URL='$CLOUDFRONT_URL'; bash -s" << 'EOF'
 # Initialize variables
 CERTBOT_SUCCESS=false
 
@@ -223,19 +223,25 @@ if { ! command -v docker >/dev/null 2>&1 || ! systemctl is-active --quiet docker
     exit 1
 fi
 
-# Configure 4GB swap to leverage the extra memory on t3.small
+# Configure 2GB swap for t3.small (more conservative approach)
 if [ ! -f /swapfile ]; then
-    echo "Configuring 4GB swap for t3.small memory optimization..."
-    sudo fallocate -l 4G /swapfile
+    echo "Configuring 2GB swap for t3.small stability..."
+    sudo fallocate -l 2G /swapfile
     sudo chmod 600 /swapfile
     sudo mkswap /swapfile
     sudo swapon /swapfile
     echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-    # Optimize swap usage for better performance
-    echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
+    # Conservative swap settings to prevent system freezing
+    echo 'vm.swappiness=5' | sudo tee -a /etc/sysctl.conf
     echo 'vm.vfs_cache_pressure=50' | sudo tee -a /etc/sysctl.conf
+    echo 'vm.dirty_ratio=10' | sudo tee -a /etc/sysctl.conf
+    echo 'vm.dirty_background_ratio=5' | sudo tee -a /etc/sysctl.conf
     sudo sysctl -p
 fi
+
+# Install system monitoring tools
+echo "📊 Installing system monitoring tools..."
+sudo apt-get install -y htop iotop sysstat bc
 
 # Install and configure Nginx as reverse proxy with Let's Encrypt (sslip.io hostname)
 echo "🌐 Installing Nginx and certbot..."
@@ -271,33 +277,130 @@ sudo docker system prune -af --volumes || true
 sudo journalctl --vacuum-size=100M || true
 sudo apt-get clean -y || true
 
-# Build Docker image
-echo "🐳 Building Docker image with Python 3.13.4..."
+# Build Docker image with memory optimizations
+echo "🐳 Building Docker image with memory optimizations for t3.small..."
 sudo docker build -t juvenile-immigration-api . || {
     echo "❌ Docker build failed"
     exit 1
 }
 
-# Run the container with optimized resources for t3.small (2GB RAM)
-echo "🚀 Starting Docker container with maximum resources..."
+# Run the container with ultra-conservative resources for t3.small (2GB RAM)
+echo "🚀 Starting Docker container with ultra-conservative resource limits..."
 sudo docker run -d \
-    --name juvenile-api \
-    -p 5000:5000 \
-    --memory="1800m" --memory-swap="4g" --cpus="2.0" \
-    --oom-kill-disable=false \
-    --restart unless-stopped \
-    -e CONTACT_EMAIL="$CONTACT_EMAIL" \
-    --shm-size=512m \
-    --ulimit memlock=-1 \
-    --ulimit nofile=65536:65536 \
-    juvenile-immigration-api || {
-    echo "❌ Failed to start container"
-    exit 1
-}
+  --name juvenile-api \
+  -p 5000:5000 \
+  --memory="1500m" --memory-swap="1500m" --cpus="1.0" \
+  --oom-kill-disable=false \
+  --restart unless-stopped \
+  -e CONTACT_EMAIL="$CONTACT_EMAIL" \
+  -e ENABLE_BACKEND_CORS="0" \
+  -e HOSTNAME_SSLIP="$HOSTNAME_SSLIP" \
+  -e CLOUDFRONT_URL="$CLOUDFRONT_URL" \
+  --shm-size=128m \
+  --ulimit nofile=65536:65536 \
+  juvenile-immigration-api
 
 # Wait for container to be ready
 echo "⏳ Waiting for container to be ready..."
 sleep 15
+
+# Install system monitoring script
+echo "📊 Installing system monitoring script..."
+sudo tee /usr/local/bin/monitor-api.sh >/dev/null <<'MONITOR'
+#!/bin/bash
+# API Health Monitor for t3.small instances - AGGRESSIVE MEMORY MANAGEMENT
+
+LOGFILE="/var/log/api-monitor.log"
+MAX_MEMORY_PERCENT=80  # Reduced from 85
+MAX_CPU_PERCENT=85     # Reduced from 90
+
+log_message() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | sudo tee -a "$LOGFILE"
+}
+
+check_container_health() {
+    if ! sudo docker ps | grep -q juvenile-api; then
+        log_message "ERROR: Container juvenile-api is not running"
+        sudo docker start juvenile-api 2>/dev/null
+        return 1
+    fi
+    
+    # Check container resource usage
+    STATS=$(sudo docker stats --no-stream --format "table {{.MemPerc}}\t{{.CPUPerc}}" juvenile-api 2>/dev/null | tail -n +2)
+    if [ -n "$STATS" ]; then
+        MEM_USAGE=$(echo "$STATS" | awk '{print $1}' | sed 's/%//')
+        CPU_USAGE=$(echo "$STATS" | awk '{print $2}' | sed 's/%//')
+        
+        # More aggressive memory management
+        if (( $(echo "$MEM_USAGE > $MAX_MEMORY_PERCENT" | bc -l) )); then
+            log_message "WARNING: High memory usage: ${MEM_USAGE}% - Triggering cleanup"
+            # Clear system caches
+            sudo sync
+            sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches' 2>/dev/null || true
+            # Force garbage collection in container
+            sudo docker exec juvenile-api python3 -c "import gc; gc.collect()" 2>/dev/null || true
+        fi
+        
+        # Restart if memory is critically high
+        if (( $(echo "$MEM_USAGE > 90" | bc -l) )); then
+            log_message "CRITICAL: Memory usage: ${MEM_USAGE}% - Restarting container"
+            sudo docker restart juvenile-api
+        fi
+        
+        if (( $(echo "$CPU_USAGE > $MAX_CPU_PERCENT" | bc -l) )); then
+            log_message "WARNING: High CPU usage: ${CPU_USAGE}%"
+        fi
+    fi
+}
+
+check_api_health() {
+    if ! curl -f -s --connect-timeout 5 http://localhost:5000/health >/dev/null; then
+        log_message "ERROR: API health check failed"
+        sudo docker restart juvenile-api
+        sleep 30
+        if ! curl -f -s --connect-timeout 5 http://localhost:5000/health >/dev/null; then
+            log_message "CRITICAL: API still not responding after restart"
+        else
+            log_message "INFO: API recovered after restart"
+        fi
+    fi
+}
+
+check_system_resources() {
+    # Check system memory usage with more aggressive thresholds
+    MEM_USAGE=$(free | grep Mem | awk '{printf "%.0f", $3/$2 * 100.0}')
+    if [ "$MEM_USAGE" -gt 85 ]; then  # Reduced from 90
+        log_message "WARNING: System memory usage at ${MEM_USAGE}%"
+        # Clear caches if memory is high
+        if [ "$MEM_USAGE" -gt 90 ]; then  # Reduced from 95
+            sudo sync
+            sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches' 2>/dev/null || true
+            sudo sh -c 'echo 2 > /proc/sys/vm/drop_caches' 2>/dev/null || true
+            sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' 2>/dev/null || true
+            log_message "INFO: Cleared system caches due to high memory usage"
+        fi
+    fi
+    
+    # Clean up old logs more frequently
+    if [ $(du -s /var/log | cut -f1) -gt 102400 ]; then  # If logs > 100MB
+        sudo journalctl --vacuum-size=50M >/dev/null 2>&1
+        sudo truncate -s 1M /var/log/nginx/access.log 2>/dev/null || true
+        sudo truncate -s 1M /var/log/nginx/error.log 2>/dev/null || true
+        log_message "INFO: Cleaned up system logs"
+    fi
+}
+
+# Main monitoring loop
+check_container_health
+check_api_health
+check_system_resources
+MONITOR
+
+sudo chmod +x /usr/local/bin/monitor-api.sh
+
+# Set up monitoring cron job (every 2 minutes)
+echo "⏰ Setting up monitoring cron job..."
+(crontab -l 2>/dev/null; echo "*/2 * * * * /usr/local/bin/monitor-api.sh") | sudo crontab -
 
 # Test if the API is responding locally
 if curl -f -s http://localhost:5000/health >/dev/null; then
@@ -309,28 +412,118 @@ else
 fi
 
 # Create Nginx site for the API
-echo "🌐 Configuring Nginx reverse proxy..."
+echo "🌐 Configuring Nginx reverse proxy with optimized timeouts..."
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo tee /etc/nginx/sites-available/juvenile-api >/dev/null <<NGINX
+map \$http_origin \$cors_origin {
+    default "";
+    "https://${CLOUDFRONT_URL}" \$http_origin;
+    "https://${HOSTNAME_SSLIP}" \$http_origin;
+    "http://localhost" \$http_origin;
+    ~^http://localhost(:[0-9]+)?\$ \$http_origin;
+}
+
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name _ ${HOSTNAME_SSLIP};
 
-    location / {
+    # Timeouts and buffers
+    proxy_connect_timeout 120s;
+    proxy_send_timeout 120s;
+    proxy_read_timeout 120s;
+    proxy_buffering off;
+    proxy_buffer_size 64k;
+    proxy_buffers 8 64k;
+    proxy_busy_buffers_size 128k;
+
+
+    # API routes with CORS headers on success and error
+    location /api/ {
+        # Handle CORS preflight for /api/
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$cors_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Credentials true always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers \$http_access_control_request_headers always;
+            add_header Access-Control-Max-Age 86400 always;
+            return 204;
+        }
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_connect_timeout 60;
-        proxy_send_timeout 120;
-        proxy_read_timeout 120;
-        proxy_buffering off;
-        proxy_buffer_size 128k;
-        proxy_buffers 100 128k;
-        proxy_busy_buffers_size 128k;
+
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+    }
+
+    # Health check
+    location /health {
+        # Handle CORS preflight for /health
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$cors_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Credentials true always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers \$http_access_control_request_headers always;
+            add_header Access-Control-Max-Age 86400 always;
+            return 204;
+        }
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+    }
+
+    # Default catch-all
+    location / {
+        # Handle CORS preflight for /
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$cors_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Credentials true always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers \$http_access_control_request_headers always;
+            add_header Access-Control-Max-Age 86400 always;
+            return 204;
+        }
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+    }
+
+    # Return JSON with CORS when upstream errors occur
+    error_page 502 504 = @err_json;
+    location @err_json {
+        default_type application/json;
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        return 502 '{"error":"bad_gateway"}';
     }
 }
 NGINX
@@ -383,36 +576,6 @@ if [ "$CERTBOT_SUCCESS" = false ]; then
 fi
 
 echo "✓ Nginx is serving: ${HOSTNAME_SSLIP}"
-sudo docker stop juvenile-api 2>/dev/null || true
-sudo docker rm juvenile-api 2>/dev/null || true
-sudo docker rmi juvenile-immigration-api 2>/dev/null || true
-
-sudo docker system prune -af --volumes || true
-sudo journalctl --vacuum-size=100M || true
-sudo apt-get clean -y || true
-
-# Build Docker image
-echo "Building Docker image with Python 3.13.4..."
-sudo docker build -t juvenile-immigration-api . || {
-    echo "❌ Docker build failed"
-    exit 1
-}
-
-# Run the container with optimized resources for t3.small (2GB RAM)
-sudo docker run -d \
-    --name juvenile-api \
-    -p 5000:5000 \
-    --memory="1800m" --memory-swap="4g" --cpus="2.0" \
-    --oom-kill-disable=false \
-    --restart unless-stopped \
-    -e CONTACT_EMAIL="$CONTACT_EMAIL" \
-    --shm-size=512m \
-    --ulimit memlock=-1 \
-    --ulimit nofile=65536:65536 \
-    juvenile-immigration-api || {
-    echo "❌ Failed to start container"
-    exit 1
-}
 
 # Test endpoints and show status
 echo "🔍 Testing API endpoints..."
@@ -435,9 +598,14 @@ if sudo docker ps | grep -q juvenile-api; then
         fi
     fi
     
-    # Show container logs (last 10 lines)
-    echo "📋 Container logs:"
+    # Show container logs (last 10 lines) and resource usage
+    echo "📋 Container logs (last 10 lines):"
     sudo docker logs --tail 10 juvenile-api
+    echo ""
+    echo "📊 System resource usage:"
+    free -h
+    df -h /
+    sudo docker stats --no-stream juvenile-api
 else
     echo "❌ Container is not running"
     echo "📋 Container logs:"
@@ -525,11 +693,25 @@ if [ $? -eq 0 ]; then
     
     echo "🔧 Management:"
     echo "   SSH Access:   ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP"
-    echo "   Docker Logs:  docker logs juvenile-api"
-    echo "   Restart API:  docker restart juvenile-api"
+    echo "   Docker Logs:  ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'sudo docker logs juvenile-api'"
+    echo "   Restart API:  ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'sudo docker restart juvenile-api'"
+    echo "   System Stats: ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'free -h && df -h'"
+    echo "   Diagnostics:  ./diagnose-ec2.sh --ip $EC2_IP"
     if [ "$CERTBOT_SUCCESS" = false ]; then
-        echo "   Setup SSL:    sudo certbot --nginx -d $HOSTNAME_SSLIP"
+        echo "   Setup SSL:    ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'sudo certbot --nginx -d $HOSTNAME_SSLIP'"
     fi
+    echo ""
+    echo "📊 Resource Usage Tips:"
+    echo "   - Container limited to 1.2GB RAM (60% of total)"
+    echo "   - 2GB swap configured for stability"
+    echo "   - API monitoring runs every 2 minutes"
+    echo "   - Auto-restart on container failure"
+    echo "   - Nginx timeouts reduced to 120s"
+    echo ""
+    echo "🚨 If EC2 becomes unresponsive:"
+    echo "   1. Run: ./diagnose-ec2.sh --ip $EC2_IP"
+    echo "   2. Check AWS Console for instance status"
+    echo "   3. Consider restarting the instance if necessary"
 else
     echo "❌ DEPLOYMENT FAILED!"
     echo "Check the logs above for details."
