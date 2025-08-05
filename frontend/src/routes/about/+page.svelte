@@ -1,3 +1,52 @@
+<script>
+  import { onMount } from 'svelte';
+
+  // Simple in-memory cache (persists across client-side navigations)
+  let STATS_CACHE = /** @type {{ value: any, ts: number } | null} */ (null);
+  const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+  let stats = null;
+  let isLoading = true;
+  let errorMessage = '';
+  let controller; // AbortController for safety
+
+  function formatInt(n) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    try { return new Intl.NumberFormat().format(Math.round(n)); } catch { return `${n}`; }
+  }
+
+  async function fetchBasicStats() {
+    // Use cache if fresh
+    const now = Date.now();
+    if (STATS_CACHE && (now - STATS_CACHE.ts) < CACHE_TTL_MS) {
+      stats = STATS_CACHE.value;
+      isLoading = false;
+      return;
+    }
+
+    try {
+      controller?.abort();
+      controller = new AbortController();
+      const res = await fetch('/api/data/basic-stats', {
+        credentials: 'include',
+        signal: controller.signal
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      stats = data;
+      STATS_CACHE = { value: data, ts: Date.now() };
+    } catch (err) {
+      if (err?.name !== 'AbortError') {
+        errorMessage = 'No pudimos cargar las estadísticas.';
+        console.error('About page: /api/data/basic-stats failed', err);
+      }
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  onMount(fetchBasicStats);
+</script>
 <!-- About Page Content -->
 <main class="page-content">
   <!-- Hero Section -->
@@ -19,7 +68,7 @@
         <div class="bg-gradient-to-br from-[var(--color-background)] to-white rounded-2xl p-8 shadow-lg border border-gray-100">
           <div class="flex items-center mb-6">
             <div class="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mr-4">
-              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
               </svg>
             </div>
@@ -33,7 +82,7 @@
         <div class="bg-gradient-to-br from-[var(--color-background)] to-white rounded-2xl p-8 shadow-lg border border-gray-100">
           <div class="flex items-center mb-6">
             <div class="w-12 h-12 bg-[var(--color-accent)] rounded-lg flex items-center justify-center mr-4">
-              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
               </svg>
             </div>
@@ -60,7 +109,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div class="bg-white rounded-2xl shadow-xl p-8 text-center transform hover:scale-105 transition-transform duration-300">
           <div class="w-16 h-16 bg-[var(--color-accent)] rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
             </svg>
           </div>
@@ -72,7 +121,7 @@
 
         <div class="bg-white rounded-2xl shadow-xl p-8 text-center transform hover:scale-105 transition-transform duration-300">
           <div class="w-16 h-16 bg-[var(--color-secondary)] rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.51.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83z"/>
             </svg>
           </div>
@@ -84,7 +133,7 @@
 
         <div class="bg-white rounded-2xl shadow-xl p-8 text-center transform hover:scale-105 transition-transform duration-300">
           <div class="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
             </svg>
           </div>
@@ -140,8 +189,11 @@
           <div class="aspect-square w-full rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] p-8 text-white">
             <div class="text-center h-full flex flex-col justify-center">
               <div class="mb-8">
-                <div class="text-5xl font-bold mb-2">1.9M+</div>
+                <div class="text-5xl font-bold mb-2" aria-live="polite">{isLoading ? '—' : (stats ? formatInt(stats.total_cases_analyzed) : '—')}</div>
                 <div class="text-lg opacity-90">Juvenile cases analyzed</div>
+                {#if errorMessage}
+                  <div class="mt-2 text-sm opacity-80" role="status">{errorMessage}</div>
+                {/if}
               </div>
               <div class="mb-8">
                 <div class="text-5xl font-bold mb-2">2018-2025</div>

@@ -15,57 +15,81 @@
 <section class="section-spacing bg-[var(--color-background)]" bind:this={timelineSection}>
   <div class="section-container">
     <div class="text-container mb-12">
-      <h2 class="section-title">Visual Policy Timeline</h2>
-      <p class="section-subtitle">A historical overview of key policy changes affecting immigrant juveniles.</p>
+      <h2 class="section-title">Policy Timeline (2018–2025)</h2>
+      <p class="section-subtitle">Key U.S. immigration policy shifts that affected immigrant juveniles and access to counsel.</p>
     </div>
     <div class="relative wrap overflow-hidden p-10 h-full max-w-5xl mx-auto">
       <div class="border-2-2 absolute border-opacity-20 border-[var(--color-accent)] h-full border" style="left: 50%"></div>
-      
-      <!-- Timeline Item 1 -->
+
+      <!-- 2018: Zero Tolerance -->
       <div class="mb-8 flex justify-between items-center w-full right-timeline">
         <div class="order-1 w-5/12"></div>
         <div class="z-20 flex items-center order-1 bg-[var(--color-accent)] shadow-xl w-8 h-8 rounded-full">
           <h3 class="mx-auto font-semibold text-lg text-white">1</h3>
         </div>
         <div class="order-1 bg-white rounded-lg shadow-xl w-5/12 px-6 py-4">
-          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2010: Policy A Enacted</h3>
-          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">This policy introduced stricter guidelines for asylum seekers.</p>
+          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2018 · “Zero Tolerance”</h3>
+          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Mandatory prosecution of all border crossers led to widespread family separation and a surge of unaccompanied minors entering the system.</p>
         </div>
       </div>
-      
-      <!-- Timeline Item 2 -->
+
+      <!-- 2019: Public Charge Rule -->
       <div class="mb-8 flex justify-between flex-row-reverse items-center w-full left-timeline">
         <div class="order-1 w-5/12"></div>
         <div class="z-20 flex items-center order-1 bg-[var(--color-accent)] shadow-xl w-8 h-8 rounded-full">
           <h3 class="mx-auto font-semibold text-lg text-white">2</h3>
         </div>
         <div class="order-1 bg-white rounded-lg shadow-xl w-5/12 px-6 py-4">
-          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2015: Policy B Implemented</h3>
-          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Implementation of this policy led to increased scrutiny of juvenile cases.</p>
+          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2019 · Public Charge Expansion</h3>
+          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Broadened denial criteria based on potential public-benefit use, discouraging families from seeking legal and social services for children.</p>
         </div>
       </div>
-      
-      <!-- Timeline Item 3 -->
+
+      <!-- 2021: Rescission of Zero Tolerance -->
       <div class="mb-8 flex justify-between items-center w-full right-timeline">
         <div class="order-1 w-5/12"></div>
         <div class="z-20 flex items-center order-1 bg-[var(--color-accent)] shadow-xl w-8 h-8 rounded-full">
           <h3 class="mx-auto font-semibold text-lg text-white">3</h3>
         </div>
         <div class="order-1 bg-white rounded-lg shadow-xl w-5/12 px-6 py-4">
-          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2018: Policy C Revised</h3>
-          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Revisions to this policy aimed to streamline the process but created new challenges.</p>
+          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2021 · Zero Tolerance Rescinded</h3>
+          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">The DOJ ended the policy, halting systematic family separation while reunification challenges persisted.</p>
         </div>
       </div>
-      
-      <!-- Timeline Item 4 -->
+
+      <!-- 2021–2024: DACA Maintained/Strengthened -->
       <div class="mb-8 flex justify-between flex-row-reverse items-center w-full left-timeline">
         <div class="order-1 w-5/12"></div>
         <div class="z-20 flex items-center order-1 bg-[var(--color-accent)] shadow-xl w-8 h-8 rounded-full">
           <h3 class="mx-auto font-semibold text-lg text-white">4</h3>
         </div>
         <div class="order-1 bg-white rounded-lg shadow-xl w-5/12 px-6 py-4">
-          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2022: Current Landscape</h3>
-          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">The current landscape presents a complex web of regulations affecting access to justice.</p>
+          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2021–2024 · DACA Maintained</h3>
+          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Protections for childhood arrivals were maintained and clarified, supporting continued relief eligibility for many youths.</p>
+        </div>
+      </div>
+
+      <!-- 2025: Enforcement & Detention Expansion -->
+      <div class="mb-8 flex justify-between items-center w-full right-timeline">
+        <div class="order-1 w-5/12"></div>
+        <div class="z-20 flex items-center order-1 bg-[var(--color-accent)] shadow-xl w-8 h-8 rounded-full">
+          <h3 class="mx-auto font-semibold text-lg text-white">5</h3>
+        </div>
+        <div class="order-1 bg-white rounded-lg shadow-xl w-5/12 px-6 py-4">
+          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2025 · Enhanced Enforcement & Detention</h3>
+          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">ICE arrest rates and detention capacity expanded sharply, heightening detention and separation risks for mixed‑status families with juveniles.</p>
+        </div>
+      </div>
+
+      <!-- 2025: UAC Redefinition & Accelerated Dockets -->
+      <div class="mb-8 flex justify-between flex-row-reverse items-center w-full left-timeline">
+        <div class="order-1 w-5/12"></div>
+        <div class="z-20 flex items-center order-1 bg-[var(--color-accent)] shadow-xl w-8 h-8 rounded-full">
+          <h3 class="mx-auto font-semibold text-lg text-white">6</h3>
+        </div>
+        <div class="order-1 bg-white rounded-lg shadow-xl w-5/12 px-6 py-4">
+          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2025 · UAC Redefinition & Fast‑Track Dockets</h3>
+          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Proposals to narrow who counts as an unaccompanied minor and expanded accelerated dockets reduce time to secure counsel and may lower appearance rates.</p>
         </div>
       </div>
     </div>

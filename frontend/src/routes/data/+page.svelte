@@ -33,7 +33,7 @@
       <div class="text-center mb-16">
         <h2 class="text-3xl font-bold tracking-tight text-[var(--color-primary)] sm:text-4xl">Research Methodology</h2>
         <p class="mt-4 text-lg leading-8 text-[var(--color-text-secondary)] max-w-3xl mx-auto">
-          Our comprehensive approach combines multiple research methodologies to ensure robust and actionable insights
+          Our analysis is fully data-driven. We rely on public administrative datasets (EOIR case data, TRAC Immigration, and ORR) and quantitative methods to produce robust, actionable insights. No interviews or surveys were conducted.
         </p>
       </div>
       
@@ -45,20 +45,19 @@
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
-            <h3 class="text-2xl font-bold tracking-tight text-[var(--color-primary)]">Systems Thinking Approach</h3>
+            <h3 class="text-2xl font-bold tracking-tight text-[var(--color-primary)]">Policy & Systems Analysis</h3>
           </div>
           <p class="text-lg leading-8 text-[var(--color-text-secondary)] mb-6">
-            We employ a systems thinking approach to understand the complex interplay of factors affecting immigrant juveniles. This involves analyzing the legal, social, and
-            institutional systems that influence their access to justice, recognizing that changes in one area can have ripple effects across the entire system.
+            We examine how policy eras (2018–2025) shape representation and outcomes across the immigration system. By situating case-level results in their policy context, we identify where changes in enforcement and adjudication align with shifts in juvenile outcomes.
           </p>
           <div class="grid grid-cols-2 gap-4">
             <div class="text-center p-4 bg-white rounded-lg shadow-sm">
-              <div class="text-2xl font-bold text-[var(--color-accent)]">360°</div>
-              <div class="text-sm text-[var(--color-text-secondary)]">Comprehensive Analysis</div>
+              <div class="text-2xl font-bold text-[var(--color-accent)]">2018–2025</div>
+              <div class="text-sm text-[var(--color-text-secondary)]">Timeframe</div>
             </div>
             <div class="text-center p-4 bg-white rounded-lg shadow-sm">
-              <div class="text-2xl font-bold text-[var(--color-accent)]">5+</div>
-              <div class="text-sm text-[var(--color-text-secondary)]">System Levels</div>
+              <div class="text-2xl font-bold text-[var(--color-accent)]">3</div>
+              <div class="text-sm text-[var(--color-text-secondary)]">Policy Eras</div>
             </div>
           </div>
         </div>
@@ -70,19 +69,18 @@
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
               </svg>
             </div>
-            <h3 class="text-2xl font-bold tracking-tight text-[var(--color-primary)]">Mixed Methods Research</h3>
+            <h3 class="text-2xl font-bold tracking-tight text-[var(--color-primary)]">Quantitative Methods</h3>
           </div>
           <p class="text-lg leading-8 text-[var(--color-text-secondary)] mb-6">
-            Our research utilizes a mixed-methods approach, combining qualitative interviews with legal professionals, social workers, and juveniles, alongside quantitative
-            analysis of policy data and case outcomes. This comprehensive approach ensures a nuanced understanding of the challenges faced.
+            We use time series analysis, chi-square tests, and logistic regression on EOIR case records to quantify relationships between legal representation, policy periods, and juvenile case outcomes. This yields a nuanced, evidence-based view without relying on interviews or surveys.
           </p>
           <div class="grid grid-cols-2 gap-4">
             <div class="text-center p-4 bg-white rounded-lg shadow-sm">
-              <div class="text-2xl font-bold text-[var(--color-secondary)]">50+</div>
-              <div class="text-sm text-[var(--color-text-secondary)]">Interviews Conducted</div>
+              <div class="text-2xl font-bold text-[var(--color-secondary)]">3</div>
+              <div class="text-sm text-[var(--color-text-secondary)]">Core Methods</div>
             </div>
             <div class="text-center p-4 bg-white rounded-lg shadow-sm">
-              <div class="text-2xl font-bold text-[var(--color-secondary)]">10K+</div>
+              <div class="text-2xl font-bold text-[var(--color-secondary)]">14,892</div>
               <div class="text-sm text-[var(--color-text-secondary)]">Cases Analyzed</div>
             </div>
           </div>
@@ -100,6 +98,9 @@
           The Executive Office for Immigration Review (EOIR) Case Data from Data.gov is the primary source of information for this project.
           Our analysis reveals critical insights about legal representation and case outcomes for juvenile immigrants.
         </p>
+        <div class="mt-6 text-sm text-[var(--color-text-secondary)] max-w-4xl mx-auto">
+          <p><strong>Data sources:</strong> EOIR Case Data (Data.gov), TRAC Immigration (Juvenile Tool), and ORR (UC Program Facts & Data). Analyses rely exclusively on these administrative datasets; no interviews or surveys were conducted.</p>
+        </div>
       </div>
       
       <!-- Key Statistics -->
@@ -191,10 +192,9 @@
   <section class="py-20 bg-white">
     <div class="mx-auto max-w-7xl px-6 lg:px-8">
       <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold tracking-tight text-[var(--color-primary)] sm:text-4xl">Ethical Considerations and Limitations</h2>
+        <h2 class="text-3xl font-bold tracking-tight text-[var(--color-primary)] sm:text-4xl">Data Ethics and Limitations</h2>
         <p class="mt-4 text-lg leading-8 text-[var(--color-text-secondary)] max-w-4xl mx-auto">
-          Ethical considerations are paramount in our research. We prioritize the safety and well-being of participants, ensuring informed consent, confidentiality, and
-          trauma-informed practices. Limitations include the challenges of accessing vulnerable populations and the potential for bias in self-reported data.
+          We focus on responsible use of public administrative data: avoiding personally identifiable information, documenting methods, assessing bias, and communicating uncertainty. Key limitations include proxy measures for representation, missing values, court-by-court variation, and the short 2025 window.
         </p>
       </div>
       
@@ -210,22 +210,34 @@
             <h3 class="text-2xl font-bold text-[var(--color-primary)]">Our Ethical Framework</h3>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-50">
-              <div class="w-3 h-3 bg-[var(--color-accent)] rounded-full mr-3"></div>
-              <span class="text-[var(--color-text-secondary)] font-medium">Informed consent protocols</span>
+          <div class="space-y-4">
+            <div class="flex items-start">
+              <div class="w-2 h-2 bg-[var(--color-accent)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">No PII — Public/Admin Data Only</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">We analyze only public administrative datasets and avoid direct identifiers; results are aggregated to reduce re-identification risk.</p>
+              </div>
             </div>
-            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-50">
-              <div class="w-3 h-3 bg-[var(--color-accent)] rounded-full mr-3"></div>
-              <span class="text-[var(--color-text-secondary)] font-medium">Confidentiality protection</span>
+            <div class="flex items-start">
+              <div class="w-2 h-2 bg-[var(--color-accent)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Transparent, Reproducible Methods</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">Methods, assumptions, and sources are documented; versioned code and pipelines enable others to reproduce the analysis.</p>
+              </div>
             </div>
-            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-50">
-              <div class="w-3 h-3 bg-[var(--color-accent)] rounded-full mr-3"></div>
-              <span class="text-[var(--color-text-secondary)] font-medium">Trauma-informed practices</span>
+            <div class="flex items-start">
+              <div class="w-2 h-2 bg-[var(--color-accent)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Bias Checks & Validation</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">We examine selection and measurement bias, run sensitivity checks, and cross-validate key figures with external sources when possible.</p>
+              </div>
             </div>
-            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-50">
-              <div class="w-3 h-3 bg-[var(--color-accent)] rounded-full mr-3"></div>
-              <span class="text-[var(--color-text-secondary)] font-medium">Data validation and triangulation</span>
+            <div class="flex items-start">
+              <div class="w-2 h-2 bg-[var(--color-accent)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Responsible Communication of Uncertainty</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">We report limitations, confidence bounds, and data gaps, and avoid causal claims where the evidence is correlational.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -245,22 +257,29 @@
             <div class="flex items-start">
               <div class="w-2 h-2 bg-[var(--color-secondary)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
               <div>
-                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Access Challenges</h4>
-                <p class="text-sm text-[var(--color-text-secondary)]">Difficulties reaching vulnerable populations due to legal and safety concerns</p>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Proxy Measure (In Absentia)</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">Using in absentia as a proxy for lack of representation is imperfect and may misclassify some cases</p>
               </div>
             </div>
             <div class="flex items-start">
               <div class="w-2 h-2 bg-[var(--color-secondary)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
               <div>
-                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Data Bias Potential</h4>
-                <p class="text-sm text-[var(--color-text-secondary)]">Self-reported data may contain inherent biases requiring careful validation</p>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Missing & Incomplete Data</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">Some key fields have gaps, which can affect estimates and model stability</p>
               </div>
             </div>
             <div class="flex items-start">
               <div class="w-2 h-2 bg-[var(--color-secondary)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
               <div>
-                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Sample Representativity</h4>
-                <p class="text-sm text-[var(--color-text-secondary)]">Ensuring sample diversity across different demographic groups</p>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Court-to-Court Variation</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">Practices and timelines differ by court, which may influence outcomes independently of policy era</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="w-2 h-2 bg-[var(--color-secondary)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
+              <div>
+                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Recency of 2025 Period</h4>
+                <p class="text-sm text-[var(--color-text-secondary)]">Limited time for cases to complete in 2025 reduces certainty about Trump Era II effects</p>
               </div>
             </div>
           </div>

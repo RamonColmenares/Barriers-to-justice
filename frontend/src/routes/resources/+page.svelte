@@ -1,4 +1,22 @@
 <!-- Resources Page Content -->
+<script>
+  // Reuse rel attribute for all external links (security best practice)
+  const relExternal = "noopener noreferrer";
+  const sourceTag = "inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-2.5 py-1 rounded-full hover:bg-gray-200 hover:text-gray-900 transition-colors";
+
+  // Smooth scroll to in-page targets with focus & brief highlight
+  function scrollToTarget(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // manage focus for accessibility
+    el.setAttribute('tabindex', '-1');
+    el.focus({ preventScroll: true });
+    // flash outline to indicate arrival
+    el.classList.add('ring-2', 'ring-[var(--color-accent)]', 'ring-offset-2', 'ring-offset-white');
+    setTimeout(() => el.classList.remove('ring-2', 'ring-[var(--color-accent)]', 'ring-offset-2', 'ring-offset-white'), 1200);
+  }
+</script>
 <main class="page-content">
   <!-- Hero Section -->
   <section class="relative bg-gradient-to-br from-[var(--color-secondary)] via-[var(--color-primary)] to-[var(--color-accent)] text-white py-20">
@@ -19,49 +37,49 @@
         <!-- Data & Datasets -->
         <div class="bg-gradient-to-br from-[var(--color-background)] to-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center transform hover:scale-105 transition-transform duration-300">
           <div class="w-16 h-16 bg-[var(--color-accent)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-white" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
             </svg>
           </div>
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">Data & Datasets</h3>
           <p class="text-[var(--color-text-secondary)] mb-4">Cleaned and processed immigration case data</p>
-          <span class="inline-block bg-[var(--color-accent)] text-white px-3 py-1 rounded-full text-sm">12 files</span>
+          <span class="inline-block bg-[var(--color-accent)] text-white px-3 py-1 rounded-full text-sm">4 files</span>
         </div>
 
         <!-- Research Papers -->
         <div class="bg-gradient-to-br from-[var(--color-background)] to-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center transform hover:scale-105 transition-transform duration-300">
           <div class="w-16 h-16 bg-[var(--color-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-white" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
               <path d="M19,3H5C3.9,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.9 20.1,3 19,3M19,19H5V5H19V19Z"/>
             </svg>
           </div>
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">Research Papers</h3>
           <p class="text-[var(--color-text-secondary)] mb-4">Academic publications and analysis reports</p>
-          <span class="inline-block bg-[var(--color-secondary)] text-white px-3 py-1 rounded-full text-sm">8 papers</span>
+          <span class="inline-block bg-[var(--color-secondary)] text-white px-3 py-1 rounded-full text-sm">1 report</span>
         </div>
 
         <!-- Code & Tools -->
         <div class="bg-gradient-to-br from-[var(--color-background)] to-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center transform hover:scale-105 transition-transform duration-300">
           <div class="w-16 h-16 bg-[var(--color-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-white" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8,3A2,2 0 0,0 6,5V9A2,2 0 0,1 4,11H3V13H4A2,2 0 0,1 6,15V19A2,2 0 0,0 8,21H10V19H8V14A2,2 0 0,0 6,12A2,2 0 0,0 8,10V5H10V3M16,3A2,2 0 0,1 18,5V9A2,2 0 0,0 20,11H21V13H20A2,2 0 0,0 18,15V19A2,2 0 0,1 16,21H14V19H16V14A2,2 0 0,1 18,12A2,2 0 0,1 16,10V5H14V3"/>
             </svg>
           </div>
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">Code & Tools</h3>
           <p class="text-[var(--color-text-secondary)] mb-4">Analysis scripts and data processing tools</p>
-          <span class="inline-block bg-[var(--color-primary)] text-white px-3 py-1 rounded-full text-sm">5 repositories</span>
+          <span class="inline-block bg-[var(--color-primary)] text-white px-3 py-1 rounded-full text-sm">1 repository</span>
         </div>
 
         <!-- Policy Documents -->
         <div class="bg-gradient-to-br from-[var(--color-background)] to-white rounded-2xl p-6 shadow-lg border border-gray-100 text-center transform hover:scale-105 transition-transform duration-300">
           <div class="w-16 h-16 bg-[var(--color-accent)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-white" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
           </div>
           <h3 class="text-xl font-bold text-[var(--color-primary)] mb-2">Policy Documents</h3>
           <p class="text-[var(--color-text-secondary)] mb-4">Immigration policy analysis and reviews</p>
-          <span class="inline-block bg-[var(--color-accent)] text-white px-3 py-1 rounded-full text-sm">15 documents</span>
+          <span class="inline-block bg-[var(--color-accent)] text-white px-3 py-1 rounded-full text-sm">10 documents</span>
         </div>
       </div>
     </div>
@@ -78,8 +96,8 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Primary Dataset -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
+        <!-- Primary Dataset (Updated) -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 flex flex-col h-full">
           <div class="flex items-start justify-between mb-6">
             <div class="flex items-center">
               <div class="w-12 h-12 bg-[var(--color-primary)] rounded-lg flex items-center justify-center mr-4">
@@ -88,37 +106,40 @@
                 </svg>
               </div>
               <div>
-                <h3 class="text-xl font-bold text-[var(--color-primary)]">EOIR Juvenile Cases Dataset</h3>
-                <p class="text-sm text-[var(--color-text-secondary)]">1.9M records • Updated January 2025</p>
+                <h3 class="text-xl font-bold text-[var(--color-primary)]">EOIR Juvenile Datasets (Cleaned)</h3>
+                <p class="text-sm text-[var(--color-text-secondary)]">4 cleaned CSV.gz files • Updated January 2025</p>
               </div>
             </div>
             <span class="bg-[var(--color-accent)] text-white px-3 py-1 rounded-full text-sm">Featured</span>
           </div>
-          <p class="text-[var(--color-text-secondary)] mb-6">
-            Comprehensive dataset of juvenile immigration cases from the Executive Office for Immigration Review, 
-            covering cases from 2018-2025 with demographic data, representation status, and case outcomes.
-          </p>
-          <div class="flex flex-wrap gap-2 mb-6">
-            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">CSV</span>
-            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">2.3 GB</span>
-            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Cleaned</span>
+          <div class="flex-1 flex flex-col">
+            <p class="text-[var(--color-text-secondary)] mb-6">
+              Four cleaned EOIR juvenile files: case-level table, event history, proceedings timeline, and assigned representation status (CSV.gz).
+            </p>
+            <div class="flex flex-wrap gap-2 mb-6 mt-auto">
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">CSV.gz</span>
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Cleaned</span>
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">4 files</span>
+            </div>
           </div>
-          <div class="flex gap-3">
-            <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
-               target="_blank" 
+          <div class="mt-auto flex gap-3 items-stretch">
+            <a href="#data-resources"
+               role="button"
+               aria-label="Jump to Data Resources section"
+               on:click|preventDefault={() => scrollToTarget('data-resources')}
                class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] transition-colors flex-1 text-center">
-              Download Dataset
+              See Downloads Below
             </a>
-            <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
-               target="_blank" 
-               class="border border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-md hover:bg-[var(--color-primary)] hover:text-white transition-colors text-center">
-              View Documentation
+            <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo"
+               target="_blank" rel={relExternal}
+               class="border border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-md hover:bg-[var(--color-primary)] hover:text-white transition-colors flex-1 text-center">
+              Open Repo
             </a>
           </div>
         </div>
 
         <!-- Main Analysis Notebook -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
+        <div class="bg-white rounded-2xl shadow-xl p-8 flex flex-col h-full">
           <div class="flex items-start justify-between mb-6">
             <div class="flex items-center">
               <div class="w-12 h-12 bg-[var(--color-secondary)] rounded-lg flex items-center justify-center mr-4">
@@ -133,24 +154,26 @@
             </div>
             <span class="bg-[var(--color-secondary)] text-white px-3 py-1 rounded-full text-sm">New</span>
           </div>
-          <p class="text-[var(--color-text-secondary)] mb-6">
-            Complete analysis workflow including data cleaning, exploratory data analysis, statistical testing, 
-            and visualization generation. Fully reproducible research pipeline.
-          </p>
-          <div class="flex flex-wrap gap-2 mb-6">
-            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Jupyter</span>
-            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Python 3.9+</span>
-            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Pandas</span>
+          <div class="flex-1 flex flex-col">
+            <p class="text-[var(--color-text-secondary)] mb-6">
+              Complete analysis workflow including data cleaning, exploratory data analysis, statistical testing,
+              and visualization generation. Fully reproducible research pipeline.
+            </p>
+            <div class="flex flex-wrap gap-2 mb-6 mt-auto">
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Jupyter</span>
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Python 3.9+</span>
+              <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Pandas</span>
+            </div>
           </div>
-          <div class="flex gap-3">
+          <div class="mt-auto flex gap-3 items-stretch">
             <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/4_data_analysis/4_data_analysis.ipynb" 
-               target="_blank" 
+               target="_blank" rel={relExternal}
                class="bg-[var(--color-secondary)] text-white px-4 py-2 rounded-md hover:bg-[var(--color-primary)] transition-colors flex-1 text-center">
               View on GitHub
             </a>
             <a href="https://colab.research.google.com/github/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/4_data_analysis/4_data_analysis.ipynb" 
-               target="_blank" 
-               class="border border-[var(--color-secondary)] text-[var(--color-secondary)] px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] hover:text-white transition-colors text-center">
+               target="_blank" rel={relExternal}
+               class="border border-[var(--color-secondary)] text-[var(--color-secondary)] px-4 py-2 rounded-md hover:bg-[var(--color-secondary)] hover:text-white transition-colors flex-1 text-center">
               Run in Colab
             </a>
           </div>
@@ -165,85 +188,70 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Data Resources -->
         <div>
-          <h3 class="text-2xl font-bold text-[var(--color-primary)] mb-8">Data Resources</h3>
+          <h3 id="data-resources" class="text-2xl font-bold text-[var(--color-primary)] mb-8">Data Resources</h3>
           <div class="space-y-4">
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">Juvenile Cases (Cleaned)</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">2.3 GB</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">juvenile_cases_cleaned.csv.gz</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">CSV.gz</span>
               </div>
               <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Processed EOIR juvenile immigration case data with demographic information and outcomes.
+                Cleaned juvenile case-level table.
               </p>
               <div class="flex gap-2">
-                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
-                   target="_blank" 
+                <a href="https://drive.google.com/file/d/1XXUKEa9QBCBKAoYSvKWQf19NIsEjWPCo/view?usp=sharing"
+                   target="_blank" rel={relExternal}
                    class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
                 </a>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Preview
-                </button>
               </div>
             </div>
-
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">Legal Representation Data</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">890 MB</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">juvenile_reps_assigned.csv.gz</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">CSV.gz</span>
               </div>
               <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Attorney representation records linked to juvenile cases and outcomes.
+                Assigned representation status per case.
               </p>
               <div class="flex gap-2">
-                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
-                   target="_blank" 
+                <a href="https://drive.google.com/file/d/1tZiPOZfgaJOpPwW9kuGqCvMWk2PAUAIO/view?usp=sharing"
+                   target="_blank" rel={relExternal}
                    class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
                 </a>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Preview
-                </button>
               </div>
             </div>
-
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">Proceedings Timeline</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">1.2 GB</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">juvenile_proceedings_cleaned.csv.gz</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">CSV.gz</span>
               </div>
               <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Case processing timelines, hearing dates, and decision milestones.
+                Cleaned proceedings timeline (hearing dates, statuses).
               </p>
               <div class="flex gap-2">
-                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
-                   target="_blank" 
+                <a href="https://drive.google.com/file/d/1TEAOTFKZrteqrD2u7sb6ilgpiz10hZJC/view?usp=sharing"
+                   target="_blank" rel={relExternal}
                    class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
                 </a>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Preview
-                </button>
               </div>
             </div>
-
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">Reference Tables</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">15 MB</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">juvenile_history_cleaned.csv.gz</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">CSV.gz</span>
               </div>
               <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Lookup tables for case codes, decision types, and geographical data.
+                Cleaned event history per case (hearings, decisions, updates).
               </p>
               <div class="flex gap-2">
-                <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" 
-                   target="_blank" 
+                <a href="https://drive.google.com/file/d/1iRayX8VCZzh8wkLDJAh7rkzP6IrzUThG/view?usp=sharing"
+                   target="_blank" rel={relExternal}
                    class="text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
                   Download
                 </a>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Preview
-                </button>
               </div>
             </div>
           </div>
@@ -253,81 +261,54 @@
         <div>
           <h3 class="text-2xl font-bold text-[var(--color-primary)] mb-8">Code & Documentation</h3>
           <div class="space-y-4">
+            <!-- Repo Root -->
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">Data Cleaning Pipeline</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">Python</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">Repository (ET6-CDSP-group-19-repo)</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">GitHub</span>
               </div>
-              <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Complete data preprocessing and cleaning scripts for EOIR datasets.
-              </p>
+              <p class="text-sm text-[var(--color-text-secondary)] mb-3">Project structure, guides, and all notebooks.</p>
               <div class="flex gap-2">
-                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo" 
-                   target="_blank" 
-                   class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
-                  GitHub
-                </a>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Docs
-                </button>
+                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo" target="_blank" rel={relExternal} class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">Open Repo</a>
               </div>
             </div>
 
+            <!-- Data Preparation Notebook -->
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">Statistical Analysis</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">R & Python</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">02_clean_core_tables.ipynb (Data Preparation)</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">Jupyter</span>
               </div>
-              <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Comprehensive statistical analysis and hypothesis testing scripts.
-              </p>
+              <p class="text-sm text-[var(--color-text-secondary)] mb-3">Cleaning pipeline for core EOIR tables.</p>
               <div class="flex gap-2">
-                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo" 
-                   target="_blank" 
-                   class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
-                  GitHub
-                </a>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Docs
-                </button>
+                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/2_data_preparation/notebooks/02_clean_core_tables.ipynb" target="_blank" rel={relExternal} class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">GitHub</a>
+                <a href="https://colab.research.google.com/github/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/2_data_preparation/notebooks/02_clean_core_tables.ipynb" target="_blank" rel={relExternal} class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">Run in Colab</a>
               </div>
             </div>
 
+            <!-- Exploration Notebook -->
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">Visualization Tools</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">JavaScript</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">03_eda_juvenile_cases.ipynb (Exploration)</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">Jupyter</span>
               </div>
-              <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Interactive dashboard components and chart generation tools.
-              </p>
+              <p class="text-sm text-[var(--color-text-secondary)] mb-3">Exploratory analysis of juvenile cases.</p>
               <div class="flex gap-2">
-                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo" 
-                   target="_blank" 
-                   class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
-                  GitHub
-                </a>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Demo
-                </button>
+                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/3_data_exploration/notebooks/03_eda_juvenile_cases.ipynb" target="_blank" rel={relExternal} class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">GitHub</a>
+                <a href="https://colab.research.google.com/github/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/3_data_exploration/notebooks/03_eda_juvenile_cases.ipynb" target="_blank" rel={relExternal} class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">Run in Colab</a>
               </div>
             </div>
 
+            <!-- Final Analysis Notebook -->
             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-[var(--color-primary)]">API Documentation</h4>
-                <span class="text-sm text-[var(--color-text-secondary)]">REST API</span>
+                <h4 class="font-semibold text-[var(--color-primary)]">4_data_analysis.ipynb (Final Analysis)</h4>
+                <span class="text-sm text-[var(--color-text-secondary)]">Jupyter</span>
               </div>
-              <p class="text-sm text-[var(--color-text-secondary)] mb-3">
-                Complete API reference for accessing data programmatically.
-              </p>
+              <p class="text-sm text-[var(--color-text-secondary)] mb-3">Final models, tests, and figures.</p>
               <div class="flex gap-2">
-                <button class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
-                  API Docs
-                </button>
-                <button class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">
-                  Examples
-                </button>
+                <a href="https://github.com/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/4_data_analysis/4_data_analysis.ipynb" target="_blank" rel={relExternal} class="text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">GitHub</a>
+                <a href="https://colab.research.google.com/github/MIT-Emerging-Talent/ET6-CDSP-group-19-repo/blob/main/4_data_analysis/4_data_analysis.ipynb" target="_blank" rel={relExternal} class="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 transition-colors">Run in Colab</a>
               </div>
             </div>
           </div>
@@ -350,7 +331,7 @@
       <div class="bg-white rounded-2xl shadow-xl p-8 mb-10 border border-gray-100">
         <h3 class="text-xl font-bold text-[var(--color-primary)] mb-3">Research Question</h3>
         <p class="text-[var(--color-text-secondary)]">
-          <strong>“How do changes in U.S. immigration policy under the current administration affect access to legal representation and outcomes for immigrant juveniles seeking protection?”</strong>
+          <strong>How do changes in U.S. immigration policy under different administrations affect access to legal representation and outcomes for immigrant juveniles seeking protection?</strong>
         </p>
       </div>
 
@@ -365,8 +346,8 @@
               <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">External</span>
             </div>
             <p class="text-sm text-[var(--color-text-secondary)] mb-4">Total numbers of juvenile cases (represented or not) across time and geography.</p>
-            <a href="https://trac.syr.edu/phptools/immigration/juvenile/" target="_blank" class="inline-flex items-center text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
-              Open Source
+            <a href="https://tracreports.org/phptools/immigration/juvenile/" target="_blank" rel={relExternal} class={sourceTag}>
+              Open Source <span aria-hidden="true">↗</span>
             </a>
           </div>
           <!-- ORR Facts & Data -->
@@ -376,23 +357,26 @@
               <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">External</span>
             </div>
             <p class="text-sm text-[var(--color-text-secondary)] mb-4">Demographics and placements for unaccompanied children (age, sex, location).</p>
-            <a href="https://www.acf.hhs.gov/orr/about/ucs/facts-and-data" target="_blank" class="inline-flex items-center text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
-              Open Source
+            <a href="https://www.acf.hhs.gov/orr/about/ucs/facts-and-data" target="_blank" rel={relExternal} class={sourceTag}>
+              Open Source <span aria-hidden="true">↗</span>
             </a>
           </div>
-          <!-- EOIR Case Data (Existing placeholder link preserved to Drive) -->
+          <!-- EOIR Case Data (FOIA) -->
           <div class="bg-white rounded-xl p-6 shadow border border-gray-100">
             <div class="flex items-start justify-between mb-2">
               <h4 class="font-semibold text-[var(--color-primary)]">EOIR Case Data (FOIA)</h4>
               <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">External</span>
             </div>
             <p class="text-sm text-[var(--color-text-secondary)] mb-4">Immigration court records incl. juvenile flags, representation, and outcomes.</p>
-            <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" target="_blank" class="inline-flex items-center text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
-              Use Placeholder Link
-            </a>
+            <div class="flex gap-2">
+              <a href="https://catalog.data.gov/dataset/eoir-case-data" target="_blank" rel={relExternal} class={sourceTag}>
+                Open on Data.gov <span aria-hidden="true">↗</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
+
 
       <!-- Curated Reading: Policy Changes & Outcomes -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -403,21 +387,98 @@
             <span class="bg-[var(--color-accent)] text-white px-3 py-1 rounded-full text-xs">Curated</span>
           </div>
           <ul class="space-y-4 text-sm">
+            <!-- A1: Zero Tolerance Policy -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Zero Tolerance Policy</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2018</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Mandatory criminal prosecution for all border crossers. Led to family separation.</p>
+              <a href="https://www.cfr.org/backgrounder/us-detention-child-migrants" target="_blank" rel={relExternal} class={sourceTag}>Council on Foreign Relations <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A1: Family Separation Policy -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Family Separation Policy</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2018</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">De facto separation for families between ports of entry; possible use of military bases for housing.</p>
+              <a href="https://www.migrationpolicy.org/article/family-separation-and-zero-tolerance-policies-rolled-out-stem-unwanted-migrants-may-face" target="_blank" rel={relExternal} class={sourceTag}>Migration Policy Institute <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A1: Zero Tolerance Rescission -->
             <li class="border border-gray-100 rounded-lg p-4">
               <div class="flex items-center justify-between mb-1">
                 <span class="font-semibold text-[var(--color-primary)]">Zero Tolerance Rescission</span>
                 <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Biden · 2021</span>
               </div>
-              <p class="text-[var(--color-text-secondary)] mb-2">DOJ ended the 2018 "Zero Tolerance" policy that drove family separations.</p>
-              <a href="https://www.justice.gov/opa/pr/attorney-general-merrick-b-garland-issues-memo-rescinding-zero-tolerance-policy" target="_blank" class="text-[var(--color-secondary)] hover:underline">Justice.gov press memo</a>
+              <p class="text-[var(--color-text-secondary)] mb-2">DOJ rescinded the 2018 "Zero Tolerance" policy.</p>
+              <a href="https://www.justice.gov/opa/pr/attorney-general-merrick-b-garland-issues-memo-rescinding-zero-tolerance-policy" target="_blank" rel={relExternal} class={sourceTag}>Justice.gov press memo <span aria-hidden="true">↗</span></a>
             </li>
+            <!-- A1: DACA Continuation -->
             <li class="border border-gray-100 rounded-lg p-4">
               <div class="flex items-center justify-between mb-1">
                 <span class="font-semibold text-[var(--color-primary)]">DACA – Program Guidance</span>
                 <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Biden · 2021–2024</span>
               </div>
               <p class="text-[var(--color-text-secondary)] mb-2">Continuation and clarifications for childhood arrivals.</p>
-              <a href="https://www.uscis.gov/DACA" target="_blank" class="text-[var(--color-secondary)] hover:underline">USCIS DACA</a>
+              <a href="https://www.uscis.gov/DACA" target="_blank" rel={relExternal} class={sourceTag}>USCIS DACA <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A1: Enhanced Enforcement -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Enhanced Enforcement</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">ICE arrest rates approximately doubled vs. FY 2024 (≈310 → ≈650/day).</p>
+              <a href="https://www.migrationpolicy.org/article/trump-2-immigration-first-100-days" target="_blank" rel={relExternal} class={sourceTag}>Migration Policy Institute <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A1: Detention Capacity Expansion -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Detention Capacity Expansion</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">ICE detention capacity increased from 41,500 beds (FY 2024) to 54,500 (as of March).</p>
+              <a href="https://www.migrationpolicy.org/article/trump-2-immigration-first-100-days" target="_blank" rel={relExternal} class={sourceTag}>Migration Policy Institute <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A1/B1: Unaccompanied Minor Definition Change (consolidated) -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Unaccompanied Minor Definition Change</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Changing the legal definition of who qualifies as an unaccompanied minor; may affect eligibility for SIJS/asylum/ORR services.</p>
+              <a href="https://www.nycbar.org/wp-content/uploads/2025/03/20221419-TrumpAdminChangesImmigrationLaw.pdf" target="_blank" rel={relExternal} class={sourceTag}>NYC Bar Association report <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- B1: Access to Counsel Reduction -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Access to Counsel Reduction (Funding Cut Policy)</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Cuts to federally funded legal aid programs for unaccompanied minors; fewer juveniles can access free/low‑cost legal help.</p>
+              <a href="https://www.vera.org/explainers/trumps-week-one-orders-on-immigration-law-explained" target="_blank" rel={relExternal} class={sourceTag}>Vera Institute <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- B1: Accelerated Docket Expansion -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Accelerated Docket Expansion</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Expanded use of fast‑track immigration hearings for minors; less time to obtain counsel; more no‑shows/default removals.</p>
+              <a href="https://www.npr.org/" target="_blank" rel={relExternal} class={sourceTag}>NPR (title as cited) <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- Refined Table: Public Charge Expansion (2019) -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Public Charge Expansion</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2019</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Broadened criteria for denying entry/relief based on potential public assistance use; chilling effect on families seeking support.</p>
+              <div class="flex flex-wrap gap-2">
+                <a href="https://www.kff.org/racial-equity-and-health-policy/fact-sheet/public-charge-policies-for-immigrants-implications-for-health-coverage/" target="_blank" rel={relExternal} class={sourceTag}>KFF <span aria-hidden="true">↗</span></a>
+                <a href="https://www.federalregister.gov/documents/2019/08/14/2019-17142/inadmissibility-on-public-charge-grounds" target="_blank" rel={relExternal} class={sourceTag}>Federal Register <span aria-hidden="true">↗</span></a>
+              </div>
             </li>
           </ul>
         </div>
@@ -429,13 +490,123 @@
             <span class="bg-[var(--color-secondary)] text-white px-3 py-1 rounded-full text-xs">Curated</span>
           </div>
           <ul class="space-y-4 text-sm">
+            <!-- A2: Unaccompanied Minors Without Court Dates -->
             <li class="border border-gray-100 rounded-lg p-4">
               <div class="flex items-center justify-between mb-1">
-                <span class="font-semibold text-[var(--color-primary)]">Representation & Success Rates</span>
+                <span class="font-semibold text-[var(--color-primary)]">Unaccompanied Minors Without Court Dates</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Biden · 2024</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">&gt;291,000 UACs apprehended without NTAs; ~90,000 from 2021 entries.</p>
+              <a href="https://www.oig.dhs.gov/sites/default/files/assets/2024-08/OIG-24-46-Aug24.pdf" target="_blank" rel={relExternal} class={sourceTag}>DHS OIG (2024) <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A2: Court Non-Appearances -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Court Non‑Appearances</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin · 2019–2023</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">32,000 UACs did not appear for court hearings.</p>
+              <a href="https://immigrationforum.org/article/unaccompanied-alien-children-ucs-or-uacs-2025-update/" target="_blank" rel={relExternal} class={sourceTag}>National Immigration Forum <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A2: Total “Lost” Contact Cases -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Total “Lost” Contact Cases</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin · 2019–2023</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">291,000 without NTAs + 32,000 no‑shows ≈ 323,000.</p>
+              <a href="https://immigrationforum.org/article/unaccompanied-alien-children-ucs-or-uacs-2025-update/" target="_blank" rel={relExternal} class={sourceTag}>National Immigration Forum <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A2: Overall Immigration Court Backlog -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Overall Immigration Court Backlog</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin · 2024</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Over 3.7M cases pending; 900k+ decided in 2024.</p>
+              <a href="https://tracreports.org/whatsnew/email.241021.html" target="_blank" rel={relExternal} class={sourceTag}>TRAC (Oct 2024) <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A2: Deportation Rates -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Deportation Rates</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Biden · 2024</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">271,000 deportations in FY2024 (vs. 267,000 in 2019).</p>
+              <a href="https://www.reuters.com/world/us/us-removals-border-crossings-up-2024-12-03/" target="_blank" rel={relExternal} class={sourceTag}>Reuters <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A2: ICE Arrests Increase -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">ICE Arrests Increase</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · 2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Arrest rate roughly doubled since FY2024 (≈310 → ≈650/day by mid‑March).</p>
+              <a href="https://www.migrationpolicy.org/article/trump-2-immigration-first-100-days" target="_blank" rel={relExternal} class={sourceTag}>Migration Policy Institute <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- A2: Monthly Deportations -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Monthly Deportations</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Trump · Apr 2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">&gt;17,200 deportations in April 2025 (~29% ↑ vs. April 2024’s &gt;13,300).</p>
+              <a href="https://www.yahoo.com/news/ice-deportations-spike-29-amid-124712345.html" target="_blank" rel={relExternal} class={sourceTag}>NBC News (via Yahoo) <span aria-hidden="true">↗</span></a>
+            </li>
+
+            <!-- B2: Success Rate with Lawyers -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Success Rate with Lawyers</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin · 2020–2023</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Juveniles with legal representation were 73% more likely to win than those without.</p>
+              <a href="https://tracreports.org/tracatwork/detail/A2298.html" target="_blank" rel={relExternal} class={sourceTag}>TRAC summary <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- B2: Legal Representation Gap -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Legal Representation Gap</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">All periods</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Most detained juveniles appear in court without counsel.</p>
+              <a href="https://www.americanimmigrationcouncil.org/fact-sheet/children-immigration-court-over-95-percent-represented-attorney-appear-court/" target="_blank" rel={relExternal} class={sourceTag}>AIC — Children in Court <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- B2: Case Completion Time -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Case Completion Time</span>
                 <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin</span>
               </div>
-              <p class="text-[var(--color-text-secondary)] mb-2">Children with attorneys are significantly more likely to succeed and appear for hearings.</p>
-              <a href="https://trac.syr.edu/phptools/immigration/juvenile/" target="_blank" class="text-[var(--color-secondary)] hover:underline">TRAC Juvenile Data</a>
+              <p class="text-[var(--color-text-secondary)] mb-2">Represented juvenile cases took longer but had better outcomes.</p>
+              <a href="https://tracreports.org/immigration/reports/668/" target="_blank" rel={relExternal} class={sourceTag}>TRAC analysis <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- B2: Court Appearance Rate -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Court Appearance Rate</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin · 2019–2023</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Children with lawyers were 95% more likely to attend hearings.</p>
+              <a href="https://tracreports.org/phptools/immigration/juvenile/" target="_blank" rel={relExternal} class={sourceTag}>TRAC Data Tool <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- B2: Detention Impact on Outcomes -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Detention Impact on Outcomes</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Detained children had worse outcomes than those in shelter/community placements.</p>
+              <a href="https://www.americanimmigrationcouncil.org/wp-content/uploads/2025/01/detaining_families_a_study_of_asylum_adjudication_in_family_detention_final.pdf" target="_blank" rel={relExternal} class={sourceTag}>AIC — Family Detention Study <span aria-hidden="true">↗</span></a>
+            </li>
+            <!-- B2: Backlog Effect on Minors -->
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Backlog Effect on Minors</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">2024–2025</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Delays and case overloads reduce consistency and fairness for juveniles.</p>
+              <a href="https://time.com/7203665/trump-deportation-immigration-courts/" target="_blank" rel={relExternal} class={sourceTag}>TIME analysis <span aria-hidden="true">↗</span></a>
             </li>
           </ul>
         </div>

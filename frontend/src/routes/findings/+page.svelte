@@ -794,15 +794,22 @@
     position: relative;
   }
 
-  /* Oculta la flecha nativa del <select> para evitar doble chevron */
-  select {
+  /* Oculta la flecha nativa del <select> y muestra solo un chevron SVG personalizado */
+  :global(select) {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: none !important; /* Fix para Safari */
+    /* Space for custom chevron */
+    padding-right: 2.5rem;
+    /* Keep background but inject our own chevron */
+    background-color: inherit;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 1.1rem !important;
   }
   /* Edge/IE antiguos */
-  select::-ms-expand {
+  :global(select::-ms-expand) {
     display: none;
   }
 
