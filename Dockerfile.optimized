@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements first for better caching
 COPY api/requirements.txt .
 
-# Install Python dependencies
+# Install Python dependencies with optimized memory usage
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
@@ -42,9 +42,9 @@ ENV MALLOC_TRIM_THRESHOLD_=131072
 ENV MALLOC_MMAP_MAX_=65536
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
 
 # Run the application with Gunicorn - memory optimized for t3.small (2GB RAM)
-# Single worker with more threads to handle concurrency without memory overhead
+# Single worker with async to handle concurrency without memory overhead
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "8", "--worker-class", "gthread", "--timeout", "180", "--keep-alive", "15", "--max-requests", "100", "--max-requests-jitter", "10", "--worker-tmp-dir", "/dev/shm", "--preload", "--worker-connections", "1000", "api.index:app"]

@@ -1,0 +1,18 @@
+# Ignore development files to reduce Docker image size
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.venv
+env/
+venv/
+.git
+.gitignore
+README.md
+*.md
+.DS_Store
+terraform-*
+deploy*.sh
+cleanup*.sh

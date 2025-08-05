@@ -1,0 +1,454 @@
+# Configure the AWS Provider
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+# Variables
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-1"  # Free tier eligible
+}
+
+variable "project_name" {
+  description = "Name of the project"
+  type        = string
+  default     = "juvenile-immigration-api"
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+  default     = "testing"  # Changed from "prod" to "testing"
+}
+
+variable "contact_email" {
+  description = "Email address for contact form submissions and SES"
+  type        = string
+  default     = ""
+}
+
+# Data sources - Use specific AMI ID to avoid permissions issue
+variable "ubuntu_ami_id" {
+  description = "Ubuntu 22.04 LTS AMI ID for us-east-1"
+  type        = string
+  default     = "ami-0e86e20dae9224db8"  # Ubuntu 22.04 LTS in us-east-1
+}
+
+# Create a VPC
+resource "aws_vpc" "main" {
+  cidr_block           = "10.1.0.0/16"  # Different CIDR to avoid conflicts
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-vpc"
+  }
+}
+
+# Create Internet Gateway
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-igw"
+  }
+}
+
+# Create public subnet
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.1.1.0/24"  # Different subnet to avoid conflicts
+  availability_zone       = "${var.aws_region}a"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-public-subnet"
+  }
+}
+
+# Create route table
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-public-rt"
+  }
+}
+
+# Associate route table with subnet
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+# Create security group
+resource "aws_security_group" "web" {
+  name_prefix = "${var.project_name}-${var.environment}-web"
+  vpc_id      = aws_vpc.main.id
+
+  # HTTP
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # HTTPS
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # SSH
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Flask API port
+  ingress {
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # All outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-web-sg"
+  }
+}
+
+# Create key pair
+resource "aws_key_pair" "main" {
+  key_name   = "${var.project_name}-${var.environment}-key"
+  public_key = file("~/.ssh/juvenile-immigration-key.pem.pub")
+}
+
+# Launch EC2 instance
+resource "aws_instance" "web" {
+  ami                    = var.ubuntu_ami_id
+  instance_type          = "t3.small"  # 2GB RAM - igual que producción
+  key_name               = aws_key_pair.main.key_name
+  vpc_security_group_ids = [aws_security_group.web.id]
+  subnet_id              = aws_subnet.public.id
+  iam_instance_profile   = aws_iam_instance_profile.ses_profile.name
+
+  # Disco más grande para manejar los datos y cache
+  root_block_device {
+    volume_type = "gp3"
+    volume_size = 16  # 16GB - suficiente para los datos y cache
+    encrypted   = true
+    delete_on_termination = true
+  }
+
+  user_data = <<-EOF
+              #!/bin/bash
+              apt-get update
+              apt-get install -y docker.io nginx certbot python3-certbot-nginx
+              systemctl start docker
+              systemctl enable docker
+              systemctl start nginx
+              systemctl enable nginx
+              usermod -aG docker ubuntu
+              
+              # Install Docker Compose
+              curl -L "https://github.com/docker/compose/releases/download/v2.21.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              chmod +x /usr/local/bin/docker-compose
+              
+              # Configure Nginx as reverse proxy with SSL support
+              cat > /etc/nginx/sites-available/default <<'NGINX_EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    
+    server_name _;
+    
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+
+    server_name _;
+
+    # Self-signed certificate (will be replaced by Let's Encrypt if domain is available)
+    ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+    
+    # Modern SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+
+    # API routes
+    location /api/ {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # CORS headers
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
+        
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' '*';
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+            add_header 'Access-Control-Max-Age' 1728000;
+            add_header 'Content-Type' 'text/plain; charset=utf-8';
+            add_header 'Content-Length' 0;
+            return 204;
+        }
+    }
+
+    # Health check
+    location /health {
+        proxy_pass http://localhost:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Default response for other routes
+    location / {
+        return 200 'Testing API is running on HTTPS. Use /api/ endpoints or /health for status.';
+        add_header Content-Type text/plain;
+    }
+}
+NGINX_EOF
+
+              # Create self-signed certificate for immediate HTTPS
+              openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout /etc/ssl/private/nginx-selfsigned.key \
+                -out /etc/ssl/certs/nginx-selfsigned.crt \
+                -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+
+              systemctl reload nginx
+              EOF
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-web-server"
+  }
+}
+
+# S3 bucket for static website hosting (frontend) - Testing environment
+resource "aws_s3_bucket" "frontend" {
+  bucket = "${var.project_name}-frontend-${var.environment}-v2"
+}
+
+resource "aws_s3_bucket_public_access_block" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_website_configuration" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.frontend.arn}/*"
+      },
+    ]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.frontend]
+}
+
+# CloudFront Distribution (optional, for better performance) - Testing environment
+resource "aws_cloudfront_distribution" "frontend" {
+  origin {
+    domain_name = aws_s3_bucket.frontend.bucket_regional_domain_name
+    origin_id   = "S3-${aws_s3_bucket.frontend.id}"
+  }
+
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+
+  default_cache_behavior {
+    allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${aws_s3_bucket.frontend.id}"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    viewer_protocol_policy = "redirect-to-https"
+    min_ttl                = 0
+    default_ttl            = 3600
+    max_ttl                = 86400
+  }
+
+  # Custom error pages for SPA routing
+  custom_error_response {
+    error_code         = 404
+    response_code      = 200
+    response_page_path = "/index.html"
+    error_caching_min_ttl = 10
+  }
+
+  custom_error_response {
+    error_code         = 403
+    response_code      = 200
+    response_page_path = "/index.html"
+    error_caching_min_ttl = 10
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+
+  price_class = "PriceClass_100"  # Use only North America and Europe (cheaper)
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-cloudfront"
+  }
+}
+
+# SES (Simple Email Service) Configuration - Testing environment
+resource "aws_ses_email_identity" "contact_email" {
+  count = var.contact_email != "" ? 1 : 0
+  email = var.contact_email
+}
+
+# IAM role for EC2 to send emails via SES - Testing environment
+resource "aws_iam_role" "ses_role" {
+  name = "${var.project_name}-${var.environment}-ses-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM policy for SES - Testing environment
+resource "aws_iam_policy" "ses_policy" {
+  name = "${var.project_name}-${var.environment}-ses-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach policy to role
+resource "aws_iam_role_policy_attachment" "ses_policy_attachment" {
+  role       = aws_iam_role.ses_role.name
+  policy_arn = aws_iam_policy.ses_policy.arn
+}
+
+# Instance profile for EC2
+resource "aws_iam_instance_profile" "ses_profile" {
+  name = "${var.project_name}-${var.environment}-ses-profile"
+  role = aws_iam_role.ses_role.name
+}
+
+# Outputs
+output "ec2_public_ip" {
+  description = "Public IP of the EC2 instance"
+  value       = aws_instance.web.public_ip
+}
+
+output "s3_bucket_name" {
+  description = "Name of the S3 bucket for frontend"
+  value       = aws_s3_bucket.frontend.id
+}
+
+output "s3_website_url" {
+  description = "S3 website URL"
+  value       = aws_s3_bucket_website_configuration.frontend.website_endpoint
+}
+
+output "cloudfront_url" {
+  description = "CloudFront distribution URL"
+  value       = aws_cloudfront_distribution.frontend.domain_name
+}
+
+output "ses_email_identity" {
+  description = "SES email identity for contact form"
+  value       = var.contact_email != "" ? aws_ses_email_identity.contact_email[0].email : ""
+}

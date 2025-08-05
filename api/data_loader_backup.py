@@ -1,7 +1,6 @@
 """
 Data loading functionality for the juvenile immigration API
 Only loads real data from cache or Google Drive - no mock data
-MEMORY OPTIMIZED VERSION for t3.small instances
 """
 import pandas as pd
 import requests
@@ -10,7 +9,6 @@ import gzip
 import pickle
 import os
 import traceback
-import gc
 from datetime import datetime
 
 # Local imports
@@ -59,12 +57,10 @@ def load_raw_files_from_cache():
                     "idnProceeding": "Int64",
                     "idnJuvenile": "category",
                 },
-                low_memory=True,  # Memory optimization
+                low_memory=False,
             )
             cache.set('juvenile_history', juvenile_history)
             print(f"   ✅ Loaded {len(juvenile_history):,} juvenile history records")
-            del juvenile_history  # Free memory immediately
-            gc.collect()
         else:
             print(f"   ⚠️ Optional juvenile history file not found: {history_path}")
             cache.set('juvenile_history', pd.DataFrame())
@@ -93,12 +89,10 @@ def load_raw_files_from_cache():
                 cases_path, 
                 dtype=dtype,
                 parse_dates=parse_dates,
-                low_memory=True  # Memory optimization
+                low_memory=False
             )
             cache.set('juvenile_cases', juvenile_cases)
             print(f"   ✅ Loaded {len(juvenile_cases):,} juvenile cases")
-            del juvenile_cases  # Free memory immediately
-            gc.collect()
         else:
             raise FileNotFoundError(f"Required file not found: {cases_path}")
         
@@ -114,7 +108,7 @@ def load_raw_files_from_cache():
                     "STRATTYLEVEL": "category",
                     "STRATTYTYPE": "category",
                 },
-                low_memory=True  # Memory optimization
+                low_memory=False
             )
             # Convert date columns
             if not reps_assigned.empty:
@@ -122,8 +116,6 @@ def load_raw_files_from_cache():
                 reps_assigned["E_27_DATE"] = pd.to_datetime(reps_assigned["E_27_DATE"], errors="coerce")
             cache.set('reps_assigned', reps_assigned)
             print(f"   ✅ Loaded {len(reps_assigned):,} representation assignments")
-            del reps_assigned  # Free memory immediately
-            gc.collect()
         else:
             raise FileNotFoundError(f"Required file not found: {reps_path}")
         
@@ -139,7 +131,7 @@ def load_raw_files_from_cache():
                     "ABSENTIA": "category",
                     "DEC_CODE": "category",
                 },
-                low_memory=True  # Memory optimization
+                low_memory=False
             )
             # Convert date columns
             if not proceedings.empty:
@@ -149,8 +141,6 @@ def load_raw_files_from_cache():
                         proceedings[col] = pd.to_datetime(proceedings[col], errors="coerce")
             cache.set('proceedings', proceedings)
             print(f"   ✅ Loaded {len(proceedings):,} proceedings")
-            del proceedings  # Free memory immediately
-            gc.collect()
         else:
             raise FileNotFoundError(f"Required file not found: {proceedings_path}")
         

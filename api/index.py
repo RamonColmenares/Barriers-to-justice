@@ -3,6 +3,7 @@ Docker entry point for the Juvenile Immigration API
 """
 import os
 import threading
+import time
 from flask import Flask
 from flask_cors import CORS
 
@@ -18,42 +19,50 @@ from api.data_loader import load_data
 # Create Flask app
 app = Flask(__name__)
 
-# Pre-load data on application startup to avoid per-request loading
-def initialize_data():
-    """Load data once when the application starts"""
-    print("🚀 Initializing data on application startup...")
-    if not cache.is_loaded():
-        load_data()
-    print("✅ Application initialization complete")
-
-# Initialize data in a background thread to avoid blocking startup
-threading.Thread(target=initialize_data, daemon=True).start()
-
-# Configure CORS - temporarily allow all origins to fix CORS issues
+# Configure CORS for production - specific domains only to avoid memory overhead
 CORS(app, 
-     origins="*",  # Allow all origins temporarily
+     origins=[
+         "https://d30ap9o2ygmovh.cloudfront.net",
+         "https://54-162-47-183.sslip.io",
+         "http://54-162-47-183.sslip.io"
+     ],
      methods=['GET', 'POST', 'OPTIONS'],
      allow_headers=['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
      supports_credentials=False)
 
-# Pre-load data in background thread when app starts
+# Data loading management
 _data_loading_lock = threading.Lock()
 _data_loaded = False
 
 def initialize_data():
-    """Initialize data loading in background thread"""
+    """Initialize data loading in background thread with memory optimization"""
     global _data_loaded
     with _data_loading_lock:
         if not _data_loaded:
             print("🚀 Initializing data loading...")
             try:
+                # Check if data is already cached to avoid reload
+                if cache.is_loaded():
+                    print("✅ Data already loaded from cache")
+                    _data_loaded = True
+                    return
+                
+                # Load data with timeout protection
                 load_data()
                 _data_loaded = True
                 print("✅ Data initialization completed")
+                
+                # Force garbage collection after data loading
+                import gc
+                gc.collect()
+                
             except Exception as e:
                 print(f"❌ Data initialization failed: {e}")
+                # Don't exit, let the app start anyway
+                time.sleep(5)  # Wait before potential retry
 
 # Start data loading in background thread
+print("🔄 Starting background data initialization...")
 data_thread = threading.Thread(target=initialize_data, daemon=True)
 data_thread.start()
 
