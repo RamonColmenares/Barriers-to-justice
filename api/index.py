@@ -2,6 +2,7 @@
 Docker entry point for the Juvenile Immigration API
 """
 import os
+import threading
 from flask import Flask
 from flask_cors import CORS
 
@@ -12,9 +13,21 @@ from api.api_routes import (
 )
 from api.basic_stats import get_basic_statistics
 from api.models import cache
+from api.data_loader import load_data
 
 # Create Flask app
 app = Flask(__name__)
+
+# Pre-load data on application startup to avoid per-request loading
+def initialize_data():
+    """Load data once when the application starts"""
+    print("🚀 Initializing data on application startup...")
+    if not cache.is_loaded():
+        load_data()
+    print("✅ Application initialization complete")
+
+# Initialize data in a background thread to avoid blocking startup
+threading.Thread(target=initialize_data, daemon=True).start()
 
 # Configure CORS - temporarily allow all origins to fix CORS issues
 CORS(app, 
@@ -22,6 +35,27 @@ CORS(app,
      methods=['GET', 'POST', 'OPTIONS'],
      allow_headers=['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
      supports_credentials=False)
+
+# Pre-load data in background thread when app starts
+_data_loading_lock = threading.Lock()
+_data_loaded = False
+
+def initialize_data():
+    """Initialize data loading in background thread"""
+    global _data_loaded
+    with _data_loading_lock:
+        if not _data_loaded:
+            print("🚀 Initializing data loading...")
+            try:
+                load_data()
+                _data_loaded = True
+                print("✅ Data initialization completed")
+            except Exception as e:
+                print(f"❌ Data initialization failed: {e}")
+
+# Start data loading in background thread
+data_thread = threading.Thread(target=initialize_data, daemon=True)
+data_thread.start()
 
 app.add_url_rule('/health', 'health', health, methods=['GET'])
 app.add_url_rule('/api/overview', 'get_overview', get_overview, methods=['GET'])

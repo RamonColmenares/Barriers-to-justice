@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "=== JUVENILE IMMIGRATION API - EC2 DEPLOYMENT ==="
-echo "Python 3.13.4 | Docker | EC2 t2.micro Free Tier"
+echo "Python 3.13.4 | Docker | EC2 t3.small (2GB RAM)"
 echo ""
 
 # Parse command line arguments
@@ -223,14 +223,18 @@ if { ! command -v docker >/dev/null 2>&1 || ! systemctl is-active --quiet docker
     exit 1
 fi
 
-# Configure 1GB swap to prevent OOM issues
+# Configure 4GB swap to leverage the extra memory on t3.small
 if [ ! -f /swapfile ]; then
-    echo "Configuring 1GB swap..."
-    sudo fallocate -l 1G /swapfile
+    echo "Configuring 4GB swap for t3.small memory optimization..."
+    sudo fallocate -l 4G /swapfile
     sudo chmod 600 /swapfile
     sudo mkswap /swapfile
     sudo swapon /swapfile
     echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+    # Optimize swap usage for better performance
+    echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
+    echo 'vm.vfs_cache_pressure=50' | sudo tee -a /etc/sysctl.conf
+    sudo sysctl -p
 fi
 
 # Install and configure Nginx as reverse proxy with Let's Encrypt (sslip.io hostname)
@@ -274,14 +278,18 @@ sudo docker build -t juvenile-immigration-api . || {
     exit 1
 }
 
-# Run the container first
-echo "🚀 Starting Docker container..."
+# Run the container with optimized resources for t3.small (2GB RAM)
+echo "🚀 Starting Docker container with maximum resources..."
 sudo docker run -d \
     --name juvenile-api \
     -p 5000:5000 \
-    --memory="1.5g" --cpus="1.5" \
+    --memory="1800m" --memory-swap="4g" --cpus="2.0" \
+    --oom-kill-disable=false \
     --restart unless-stopped \
     -e CONTACT_EMAIL="$CONTACT_EMAIL" \
+    --shm-size=512m \
+    --ulimit memlock=-1 \
+    --ulimit nofile=65536:65536 \
     juvenile-immigration-api || {
     echo "❌ Failed to start container"
     exit 1
@@ -390,13 +398,17 @@ sudo docker build -t juvenile-immigration-api . || {
     exit 1
 }
 
-# Run the container
+# Run the container with optimized resources for t3.small (2GB RAM)
 sudo docker run -d \
     --name juvenile-api \
     -p 5000:5000 \
-    --memory="1.5g" --cpus="1.5" \
+    --memory="1800m" --memory-swap="4g" --cpus="2.0" \
+    --oom-kill-disable=false \
     --restart unless-stopped \
     -e CONTACT_EMAIL="$CONTACT_EMAIL" \
+    --shm-size=512m \
+    --ulimit memlock=-1 \
+    --ulimit nofile=65536:65536 \
     juvenile-immigration-api || {
     echo "❌ Failed to start container"
     exit 1

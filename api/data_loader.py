@@ -445,8 +445,22 @@ def download_raw_files_from_google_drive():
 
 def load_data():
     """Load and process datasets - only real data, no mock data"""
+    # Check if data is already loaded and processed
     if cache.is_loaded():
-        return True
+        # Verify that analysis_filtered exists, if not process it
+        analysis_filtered = cache.get('analysis_filtered')
+        if analysis_filtered is not None and not analysis_filtered.empty:
+            print("✅ Data already loaded and processed in cache - skipping reload")
+            return True
+        else:
+            print("📊 Raw data loaded but analysis missing, processing...")
+            try:
+                from .data_processor import process_analysis_data
+            except ImportError:
+                from data_processor import process_analysis_data
+            process_analysis_data()
+            save_to_cache()  # Update cache with analysis
+            return True
         
     try:
         # Strategy 1: Try to load from processed cache first (fastest)

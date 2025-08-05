@@ -29,10 +29,13 @@ COPY main.py .
 # Expose port 5000
 EXPOSE 5000
 
-# Set environment variables
+# Set environment variables for optimized memory usage
 ENV FLASK_APP=main.py
 ENV FLASK_ENV=production
 ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV MALLOC_ARENA_MAX=2
 
-# Run the application with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--threads", "2", "--worker-class", "gthread", "--timeout", "120", "--keep-alive", "2", "--max-requests", "1000", "--max-requests-jitter", "100", "api.index:app"]
+# Run the application with Gunicorn - optimized for t3.small (2GB RAM)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--worker-class", "gthread", "--timeout", "300", "--keep-alive", "30", "--max-requests", "200", "--max-requests-jitter", "20", "--worker-tmp-dir", "/dev/shm", "--preload", "api.index:app"]
