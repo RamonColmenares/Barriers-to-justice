@@ -16,18 +16,12 @@ from api.models import cache
 # Create Flask app
 app = Flask(__name__)
 
-# Configure CORS with specific origins and headers
+# Configure CORS - temporarily allow all origins to fix CORS issues
 CORS(app, 
-     origins=[
-         'https://d2qqofrfkbwcrl.cloudfront.net',
-         'https://54-84-88-142.sslip.io',
-         'http://localhost:5173',
-         'http://localhost:3000',
-         'http://127.0.0.1:5173'
-     ],
+     origins="*",  # Allow all origins temporarily
      methods=['GET', 'POST', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization', 'Accept'],
-     supports_credentials=True)
+     allow_headers=['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+     supports_credentials=False)
 
 app.add_url_rule('/health', 'health', health, methods=['GET'])
 app.add_url_rule('/api/overview', 'get_overview', get_overview, methods=['GET'])

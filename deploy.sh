@@ -279,7 +279,7 @@ echo "🚀 Starting Docker container..."
 sudo docker run -d \
     --name juvenile-api \
     -p 5000:5000 \
-    --memory="512m" --cpus="0.5" \
+    --memory="1.5g" --cpus="1.5" \
     --restart unless-stopped \
     -e CONTACT_EMAIL="$CONTACT_EMAIL" \
     juvenile-immigration-api || {
@@ -316,9 +316,13 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_connect_timeout 10;
-        proxy_send_timeout 30;
-        proxy_read_timeout 30;
+        proxy_connect_timeout 60;
+        proxy_send_timeout 120;
+        proxy_read_timeout 120;
+        proxy_buffering off;
+        proxy_buffer_size 128k;
+        proxy_buffers 100 128k;
+        proxy_busy_buffers_size 128k;
     }
 }
 NGINX
@@ -390,7 +394,7 @@ sudo docker build -t juvenile-immigration-api . || {
 sudo docker run -d \
     --name juvenile-api \
     -p 5000:5000 \
-    --memory="512m" --cpus="0.5" \
+    --memory="1.5g" --cpus="1.5" \
     --restart unless-stopped \
     -e CONTACT_EMAIL="$CONTACT_EMAIL" \
     juvenile-immigration-api || {
