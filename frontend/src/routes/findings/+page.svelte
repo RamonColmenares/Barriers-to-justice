@@ -794,6 +794,18 @@
     position: relative;
   }
 
+  /* Oculta la flecha nativa del <select> para evitar doble chevron */
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: none !important; /* Fix para Safari */
+  }
+  /* Edge/IE antiguos */
+  select::-ms-expand {
+    display: none;
+  }
+
   /* Responsive adjustments */
   @media (max-width: 768px) {
     #demographicsChart,

@@ -336,6 +336,112 @@
     </div>
   </section>
 
+  <!-- Research Question & External Sources -->
+  <section class="py-16 bg-gradient-to-br from-[var(--color-background)] to-gray-50">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold tracking-tight text-[var(--color-primary)] sm:text-4xl mb-4">Research Question & External Sources</h2>
+        <p class="text-lg text-[var(--color-text-secondary)] max-w-3xl mx-auto">
+          Core question, authoritative data sources, and curated readings connected to juvenile immigration policy and outcomes.
+        </p>
+      </div>
+
+      <!-- Research Question Card -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-10 border border-gray-100">
+        <h3 class="text-xl font-bold text-[var(--color-primary)] mb-3">Research Question</h3>
+        <p class="text-[var(--color-text-secondary)]">
+          <strong>“How do changes in U.S. immigration policy under the current administration affect access to legal representation and outcomes for immigrant juveniles seeking protection?”</strong>
+        </p>
+      </div>
+
+      <!-- External Data Sources -->
+      <div class="mb-12">
+        <h3 class="text-2xl font-bold text-[var(--color-primary)] mb-6">External Data Sources</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- TRAC Immigration -->
+          <div class="bg-white rounded-xl p-6 shadow border border-gray-100">
+            <div class="flex items-start justify-between mb-2">
+              <h4 class="font-semibold text-[var(--color-primary)]">TRAC Immigration – Juvenile Tool</h4>
+              <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">External</span>
+            </div>
+            <p class="text-sm text-[var(--color-text-secondary)] mb-4">Total numbers of juvenile cases (represented or not) across time and geography.</p>
+            <a href="https://trac.syr.edu/phptools/immigration/juvenile/" target="_blank" class="inline-flex items-center text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+              Open Source
+            </a>
+          </div>
+          <!-- ORR Facts & Data -->
+          <div class="bg-white rounded-xl p-6 shadow border border-gray-100">
+            <div class="flex items-start justify-between mb-2">
+              <h4 class="font-semibold text-[var(--color-primary)]">ORR – Facts & Data (UAC)</h4>
+              <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">External</span>
+            </div>
+            <p class="text-sm text-[var(--color-text-secondary)] mb-4">Demographics and placements for unaccompanied children (age, sex, location).</p>
+            <a href="https://www.acf.hhs.gov/orr/about/ucs/facts-and-data" target="_blank" class="inline-flex items-center text-sm bg-[var(--color-accent)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+              Open Source
+            </a>
+          </div>
+          <!-- EOIR Case Data (Existing placeholder link preserved to Drive) -->
+          <div class="bg-white rounded-xl p-6 shadow border border-gray-100">
+            <div class="flex items-start justify-between mb-2">
+              <h4 class="font-semibold text-[var(--color-primary)]">EOIR Case Data (FOIA)</h4>
+              <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">External</span>
+            </div>
+            <p class="text-sm text-[var(--color-text-secondary)] mb-4">Immigration court records incl. juvenile flags, representation, and outcomes.</p>
+            <a href="https://drive.google.com/drive/folders/1gv42BRnm6blapzoDEbYbFf6M1IXZJXcL?usp=drive_link" target="_blank" class="inline-flex items-center text-sm bg-[var(--color-primary)] text-white px-3 py-1 rounded hover:bg-[var(--color-secondary)] transition-colors">
+              Use Placeholder Link
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Curated Reading: Policy Changes & Outcomes -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Policy Changes -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div class="flex items-start justify-between mb-4">
+            <h3 class="text-xl font-bold text-[var(--color-primary)]">Policy Changes (Articles & News)</h3>
+            <span class="bg-[var(--color-accent)] text-white px-3 py-1 rounded-full text-xs">Curated</span>
+          </div>
+          <ul class="space-y-4 text-sm">
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Zero Tolerance Rescission</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Biden · 2021</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">DOJ ended the 2018 "Zero Tolerance" policy that drove family separations.</p>
+              <a href="https://www.justice.gov/opa/pr/attorney-general-merrick-b-garland-issues-memo-rescinding-zero-tolerance-policy" target="_blank" class="text-[var(--color-secondary)] hover:underline">Justice.gov press memo</a>
+            </li>
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">DACA – Program Guidance</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Biden · 2021–2024</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Continuation and clarifications for childhood arrivals.</p>
+              <a href="https://www.uscis.gov/DACA" target="_blank" class="text-[var(--color-secondary)] hover:underline">USCIS DACA</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Outcomes -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div class="flex items-start justify-between mb-4">
+            <h3 class="text-xl font-bold text-[var(--color-primary)]">Outcomes (Articles & Data)</h3>
+            <span class="bg-[var(--color-secondary)] text-white px-3 py-1 rounded-full text-xs">Curated</span>
+          </div>
+          <ul class="space-y-4 text-sm">
+            <li class="border border-gray-100 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-semibold text-[var(--color-primary)]">Representation & Success Rates</span>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">Cross‑Admin</span>
+              </div>
+              <p class="text-[var(--color-text-secondary)] mb-2">Children with attorneys are significantly more likely to succeed and appear for hearings.</p>
+              <a href="https://trac.syr.edu/phptools/immigration/juvenile/" target="_blank" class="text-[var(--color-secondary)] hover:underline">TRAC Juvenile Data</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
   <!-- Usage Guidelines -->
   <section class="py-16 bg-gradient-to-br from-[var(--color-background)] to-gray-50">
     <div class="mx-auto max-w-7xl px-6 lg:px-8">

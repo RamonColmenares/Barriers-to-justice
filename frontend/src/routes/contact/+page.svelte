@@ -232,6 +232,7 @@
 
 <script>
   import { onMount } from 'svelte';
+  import { API_BASE_URL } from '$lib/config.js';
 
   let isSubmitting = false;
   let submitMessage = '';
@@ -263,7 +264,7 @@
       data.newsletter = !!data.newsletter;
       
       // Send to API
-      const response = await fetch('/api/contact', {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
