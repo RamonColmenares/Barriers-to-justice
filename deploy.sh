@@ -302,6 +302,7 @@ sudo docker run -d \
     --name juvenile-api \
     -p 5000:5000 \
     --restart unless-stopped \
+    -e CONTACT_EMAIL="$CONTACT_EMAIL" \
     juvenile-immigration-api || {
     echo "❌ Failed to start container"
     exit 1
