@@ -1,6 +1,6 @@
 <!-- Findings Page with Dynamic Charts -->
 <svelte:head>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-3.0.3.min.js"></script>
 </svelte:head>
 
 <script>

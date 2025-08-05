@@ -19,6 +19,7 @@ app = Flask(__name__)
 
 # Configure CORS to allow frontend communication
 # Allow both CloudFront and direct EC2 access
+import re
 allowed_origins = [
     'https://d2qqofrfkbwcrl.cloudfront.net',
     'https://54-84-88-142.sslip.io',  # Updated IP from error logs
@@ -27,10 +28,12 @@ allowed_origins = [
     'http://localhost:5173'   # For Vite dev server
 ]
 
+# For debugging CORS issues, temporarily allow all origins
+# Remove this in production and use specific origins
 CORS(app, 
-     origins=allowed_origins,
+     resources={r"/api/*": {"origins": "*"}}, 
      methods=['GET', 'POST', 'OPTIONS'], 
-     allow_headers=['Content-Type', 'Authorization'],
+     allow_headers=['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'], 
      supports_credentials=False)
 
 # Register API routes with proper URL patterns matching frontend expectations
