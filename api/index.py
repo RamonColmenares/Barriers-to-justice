@@ -27,7 +27,7 @@ app.add_url_rule('/api/findings/countries', 'countries_chart', countries_chart, 
 app.add_url_rule('/api/meta/options', 'meta_options', meta_options, methods=['GET'])
 app.add_url_rule('/api/data-status', 'data_status', data_status, methods=['GET'])
 app.add_url_rule('/api/force-reload-data', 'force_reload_data', force_reload_data, methods=['POST'])
-app.add_url_rule('/api/contact', 'contact', contact, methods=['POST'])
+app.add_url_rule('/api/contact', 'contact', contact, methods=['POST', 'OPTIONS'])
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
