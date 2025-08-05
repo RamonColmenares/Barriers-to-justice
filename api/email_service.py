@@ -195,6 +195,9 @@ This message was sent through the Juvenile Immigration Study contact form.
         """Create HTML email body"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
         
+        # Format message to handle line breaks
+        formatted_message = form_data['message'].replace('\n', '<br>')
+        
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -250,7 +253,7 @@ This message was sent through the Juvenile Immigration Study contact form.
                     
                     <div class="field">
                         <div class="label">Message:</div>
-                        <div class="message">{form_data['message'].replace('\n', '<br>')}</div>
+                        <div class="message">{formatted_message}</div>
                     </div>
                 </div>
                 
