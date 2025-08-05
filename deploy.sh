@@ -220,6 +220,16 @@ if { ! command -v docker >/dev/null 2>&1 || ! systemctl is-active --quiet docker
     exit 1
 fi
 
+# Configure 1GB swap to prevent OOM issues
+if [ ! -f /swapfile ]; then
+    echo "Configuring 1GB swap..."
+    sudo fallocate -l 1G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+fi
+
 # Install and configure Nginx as reverse proxy with Let's Encrypt (sslip.io hostname)
 echo "🌐 Installing Nginx and certbot..."
 sudo apt-get update -y
@@ -247,6 +257,9 @@ fi
 # Create Nginx site for the API
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo tee /etc/nginx/sites-available/juvenile-api >/dev/null <<NGINX
+worker_processes 1;
+events { worker_connections 512; }
+
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -255,13 +268,13 @@ server {
     location / {
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 300;
-        proxy_connect_timeout 60;
-        proxy_send_timeout 300;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_connect_timeout 10;
+        proxy_send_timeout 30;
+        proxy_read_timeout 30;
     }
 }
 NGINX
@@ -308,6 +321,7 @@ sudo docker build -t juvenile-immigration-api . || {
 sudo docker run -d \
     --name juvenile-api \
     -p 5000:5000 \
+    --memory="512m" --cpus="0.5" \
     --restart unless-stopped \
     -e CONTACT_EMAIL="$CONTACT_EMAIL" \
     juvenile-immigration-api || {
