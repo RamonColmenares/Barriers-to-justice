@@ -23,8 +23,11 @@ app = Flask(__name__)
 CORS(app, 
      origins=[
          "https://d30ap9o2ygmovh.cloudfront.net",
+         "https://d3f74pvoh6t7bv.cloudfront.net",
          "https://54-162-47-183.sslip.io",
-         "http://54-162-47-183.sslip.io"
+         "http://54-162-47-183.sslip.io",
+         "https://54-224-172-54.sslip.io",
+         "http://54-224-172-54.sslip.io"
      ],
      methods=['GET', 'POST', 'OPTIONS'],
      allow_headers=['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
