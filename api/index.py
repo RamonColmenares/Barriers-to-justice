@@ -3,6 +3,7 @@ Docker entry point for the Juvenile Immigration API
 """
 import os
 from flask import Flask
+from flask_cors import CORS
 
 from api.api_routes import (
     health, get_overview, representation_outcomes, 
@@ -14,6 +15,14 @@ from api.models import cache
 
 # Create Flask app
 app = Flask(__name__)
+
+CORS(app, origins=[
+    'https://d2qqofrfkbwcrl.cloudfront.net',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173'
+], supports_credentials=True)
 
 app.add_url_rule('/health', 'health', health, methods=['GET'])
 app.add_url_rule('/api/overview', 'get_overview', get_overview, methods=['GET'])
