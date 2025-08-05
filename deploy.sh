@@ -174,6 +174,9 @@ echo "✓ Files copied to EC2"
 # Deploy application on EC2
 echo "🐳 Building and running Docker container..."
 ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; bash -s" << 'EOF'
+# Initialize variables
+CERTBOT_SUCCESS=false
+
 # Ensure Docker is installed and running (Ubuntu 24.04 - use Docker's official repo)
 if ! command -v docker >/dev/null 2>&1; then
     echo "⚙️ Installing Docker Engine from Docker's official repository ..."
@@ -254,12 +257,53 @@ if [ -z "$HOSTNAME_SSLIP" ]; then
     exit 1
 fi
 
+# Clean up old Docker containers and images first
+echo "🧹 Cleaning up old containers..."
+sudo docker stop juvenile-api 2>/dev/null || true
+sudo docker rm juvenile-api 2>/dev/null || true
+sudo docker rmi juvenile-immigration-api 2>/dev/null || true
+
+sudo docker system prune -af --volumes || true
+sudo journalctl --vacuum-size=100M || true
+sudo apt-get clean -y || true
+
+# Build Docker image
+echo "🐳 Building Docker image with Python 3.13.4..."
+sudo docker build -t juvenile-immigration-api . || {
+    echo "❌ Docker build failed"
+    exit 1
+}
+
+# Run the container first
+echo "🚀 Starting Docker container..."
+sudo docker run -d \
+    --name juvenile-api \
+    -p 5000:5000 \
+    --memory="512m" --cpus="0.5" \
+    --restart unless-stopped \
+    -e CONTACT_EMAIL="$CONTACT_EMAIL" \
+    juvenile-immigration-api || {
+    echo "❌ Failed to start container"
+    exit 1
+}
+
+# Wait for container to be ready
+echo "⏳ Waiting for container to be ready..."
+sleep 15
+
+# Test if the API is responding locally
+if curl -f -s http://localhost:5000/health >/dev/null; then
+    echo "✓ API container is responding"
+else
+    echo "❌ API container is not responding"
+    sudo docker logs juvenile-api
+    exit 1
+fi
+
 # Create Nginx site for the API
+echo "🌐 Configuring Nginx reverse proxy..."
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo tee /etc/nginx/sites-available/juvenile-api >/dev/null <<NGINX
-worker_processes 1;
-events { worker_connections 512; }
-
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -279,29 +323,54 @@ server {
 }
 NGINX
 
-
 sudo ln -sf /etc/nginx/sites-available/juvenile-api /etc/nginx/sites-enabled/juvenile-api
-sudo nginx -t && sudo systemctl reload nginx
+
+# Test nginx configuration
+if sudo nginx -t; then
+    echo "✓ Nginx configuration is valid"
+    sudo systemctl reload nginx
+else
+    echo "❌ Nginx configuration is invalid"
+    exit 1
+fi
 
 # Quick HTTP check on port 80 before attempting TLS
+echo "🔍 Testing HTTP proxy..."
+sleep 5
 if curl -fsS "http://$HOSTNAME_SSLIP/health" >/dev/null; then
     echo "✓ HTTP (80) proxy reachable"
 else
     echo "⚠️  HTTP (80) proxy not reachable at http://$HOSTNAME_SSLIP/health"
+    echo "Checking nginx status..."
+    sudo systemctl status nginx --no-pager
+    exit 1
 fi
 
 # Obtain/renew a Let's Encrypt certificate for the sslip.io hostname
-# The CONTACT_EMAIL is exported from the local environment prior to this heredoc.
+echo "🔐 Obtaining SSL certificate..."
+CERTBOT_SUCCESS=false
 if [ -n "$CONTACT_EMAIL" ]; then
-    sudo certbot --nginx --agree-tos -m "$CONTACT_EMAIL" --no-eff-email --redirect -d "$HOSTNAME_SSLIP" --non-interactive || true
+    if sudo certbot --nginx --agree-tos -m "$CONTACT_EMAIL" --no-eff-email --redirect -d "$HOSTNAME_SSLIP" --non-interactive; then
+        CERTBOT_SUCCESS=true
+        echo "✓ SSL certificate obtained successfully"
+    else
+        echo "❌ Failed to obtain SSL certificate with email"
+    fi
 else
-    sudo certbot --nginx --agree-tos --register-unsafely-without-email --redirect -d "$HOSTNAME_SSLIP" --non-interactive || true
+    if sudo certbot --nginx --agree-tos --register-unsafely-without-email --redirect -d "$HOSTNAME_SSLIP" --non-interactive; then
+        CERTBOT_SUCCESS=true
+        echo "✓ SSL certificate obtained successfully"
+    else
+        echo "❌ Failed to obtain SSL certificate without email"
+    fi
 fi
 
-echo "Nginx is serving: ${HOSTNAME_SSLIP}"
+if [ "$CERTBOT_SUCCESS" = false ]; then
+    echo "⚠️  SSL certificate setup failed, but continuing with HTTP only"
+    echo "You can manually run: sudo certbot --nginx -d $HOSTNAME_SSLIP"
+fi
 
-
-# Clean up old Docker containers and images...
+echo "✓ Nginx is serving: ${HOSTNAME_SSLIP}"
 sudo docker stop juvenile-api 2>/dev/null || true
 sudo docker rm juvenile-api 2>/dev/null || true
 sudo docker rmi juvenile-immigration-api 2>/dev/null || true
@@ -329,31 +398,32 @@ sudo docker run -d \
     exit 1
 }
 
-# Wait and test
-sleep 20
+# Test endpoints and show status
+echo "🔍 Testing API endpoints..."
+
 if sudo docker ps | grep -q juvenile-api; then
     echo "✓ Container is running"
     
-    # Test endpoints
-    echo "🔍 Testing API endpoints..."
-    
     if curl -f -s http://localhost:5000/health >/dev/null; then
-        echo "✓ Health endpoint working"
+        echo "✓ Health endpoint working locally"
     else
-        echo "⚠️  Health endpoint not responding"
+        echo "⚠️  Health endpoint not responding locally"
     fi
     
-    if curl -f -s -k https://localhost/health >/dev/null; then
-        echo "✓ HTTPS proxy working"
-    else
-        echo "⚠️  HTTPS proxy not responding"
+    # Test HTTPS if certificate was obtained
+    if [ "$CERTBOT_SUCCESS" = true ]; then
+        if curl -f -s -k https://localhost/health >/dev/null; then
+            echo "✓ HTTPS proxy working"
+        else
+            echo "⚠️  HTTPS proxy not responding"
+        fi
     fi
     
     # Show container logs (last 10 lines)
     echo "📋 Container logs:"
     sudo docker logs --tail 10 juvenile-api
 else
-    echo "❌ Container failed to start"
+    echo "❌ Container is not running"
     echo "📋 Container logs:"
     sudo docker logs juvenile-api
     exit 1
@@ -363,6 +433,7 @@ EOF
 if [ $? -eq 0 ]; then
     echo ""
     echo "🔎 Verifying HTTP/HTTPS on $HOSTNAME_SSLIP ..."
+    
     # First, verify HTTP (port 80) works through Nginx
     if curl -fsS "http://$HOSTNAME_SSLIP/health" >/dev/null; then
         echo "✓ HTTP health check OK"
@@ -370,42 +441,61 @@ if [ $? -eq 0 ]; then
         echo "⚠️  HTTP health check failed at http://$HOSTNAME_SSLIP/health"
     fi
 
-    # Then, wait for certificate and HTTPS (port 443)
-    ATTEMPTS=30
-    SLEEP=5
-    until curl -fsS "https://$HOSTNAME_SSLIP/health" >/dev/null || [ $ATTEMPTS -le 0 ]; do
-        echo "   ... waiting for certificate and server (attempts left: $ATTEMPTS)"
-        sleep $SLEEP
-        ATTEMPTS=$((ATTEMPTS-1))
-    done
+    # Then, test HTTPS if certificate was obtained
+    if [ "$CERTBOT_SUCCESS" = true ]; then
+        echo "🔒 Testing HTTPS connectivity..."
+        ATTEMPTS=20
+        SLEEP=3
+        until curl -fsS "https://$HOSTNAME_SSLIP/health" >/dev/null || [ $ATTEMPTS -le 0 ]; do
+            echo "   ... waiting for HTTPS to be ready (attempts left: $ATTEMPTS)"
+            sleep $SLEEP
+            ATTEMPTS=$((ATTEMPTS-1))
+        done
 
-    if curl -fsS "https://$HOSTNAME_SSLIP/health" >/dev/null; then
-        echo "✓ HTTPS health check OK"
-    else
-        echo "⚠️  HTTPS health check failed at https://$HOSTNAME_SSLIP/health"
-    fi
+        if curl -fsS "https://$HOSTNAME_SSLIP/health" >/dev/null; then
+            echo "✓ HTTPS health check OK"
+        else
+            echo "⚠️  HTTPS health check failed at https://$HOSTNAME_SSLIP/health"
+            echo "You may need to wait a few more minutes for the certificate to propagate"
+        fi
 
-    # Test a key API endpoint as well
-    if curl -fsS "https://$HOSTNAME_SSLIP/api/findings/outcome-percentages" -o /dev/null; then
-        echo "✓ Findings endpoint OK"
+        # Test a key API endpoint as well
+        if curl -fsS "https://$HOSTNAME_SSLIP/api/findings/outcome-percentages" -o /dev/null; then
+            echo "✓ Findings endpoint OK"
+        else
+            echo "⚠️  Findings endpoint check failed at https://$HOSTNAME_SSLIP/api/findings/outcome-percentages"
+        fi
     else
-        echo "⚠️  Findings endpoint check failed at https://$HOSTNAME_SSLIP/api/findings/outcome-percentages"
+        echo "⚠️  HTTPS not available - certificate setup failed"
+        echo "📡 Using HTTP endpoints only:"
+        echo "   Health Check: http://$HOSTNAME_SSLIP/health"
+        echo "   Overview:     http://$HOSTNAME_SSLIP/api/overview"
     fi
 
     echo ""
     echo "🎉 DEPLOYMENT SUCCESSFUL!"
     echo ""
-    echo "📡 API Endpoints (hostname with valid cert):"
-    echo "   Health Check: https://$HOSTNAME_SSLIP/health"
-    echo "   Overview:     https://$HOSTNAME_SSLIP/api/overview"
-    echo "   Basic Stats:  https://$HOSTNAME_SSLIP/api/data/basic-stats"
-    echo "   Findings:     https://$HOSTNAME_SSLIP/api/findings/*"
+    
+    if [ "$CERTBOT_SUCCESS" = true ]; then
+        echo "📡 API Endpoints (HTTPS with valid cert):"
+        echo "   Health Check: https://$HOSTNAME_SSLIP/health"
+        echo "   Overview:     https://$HOSTNAME_SSLIP/api/overview"
+        echo "   Basic Stats:  https://$HOSTNAME_SSLIP/api/data/basic-stats"
+        echo "   Findings:     https://$HOSTNAME_SSLIP/api/findings/*"
+        echo ""
+    fi
+    
+    echo "📡 API Endpoints (HTTP):"
+    echo "   Health Check: http://$HOSTNAME_SSLIP/health"
+    echo "   Overview:     http://$HOSTNAME_SSLIP/api/overview"
+    echo "   Basic Stats:  http://$HOSTNAME_SSLIP/api/data/basic-stats"
+    echo "   Findings:     http://$HOSTNAME_SSLIP/api/findings/*"
     echo ""
     echo "📡 API Endpoints (by IP, for debugging):"
-    echo "   Health Check: https://$EC2_IP/health"
-    echo "   Overview:     https://$EC2_IP/api/overview"
-    echo "   Basic Stats:  https://$EC2_IP/api/data/basic-stats"
-    echo "   Findings:     https://$EC2_IP/api/findings/*"
+    echo "   Health Check: http://$EC2_IP/health"
+    echo "   Overview:     http://$EC2_IP/api/overview"
+    echo "   Basic Stats:  http://$EC2_IP/api/data/basic-stats"
+    echo "   Findings:     http://$EC2_IP/api/findings/*"
     echo ""
     
     if [ "$S3_BUCKET" != "null" ] && [ -n "$S3_BUCKET" ]; then
@@ -421,6 +511,9 @@ if [ $? -eq 0 ]; then
     echo "   SSH Access:   ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP"
     echo "   Docker Logs:  docker logs juvenile-api"
     echo "   Restart API:  docker restart juvenile-api"
+    if [ "$CERTBOT_SUCCESS" = false ]; then
+        echo "   Setup SSL:    sudo certbot --nginx -d $HOSTNAME_SSLIP"
+    fi
 else
     echo "❌ DEPLOYMENT FAILED!"
     echo "Check the logs above for details."
