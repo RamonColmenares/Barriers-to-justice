@@ -4,7 +4,7 @@ Configuration and constants for the juvenile immigration API
 import os
 
 # Flask configuration
-DEBUG = False
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Raw data file names (as specified by user)
 RAW_DATA_FILES = {

@@ -23,17 +23,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY api/ ./api/
 
-# Create a simple Flask app entry point
-COPY docker-entrypoint.py .
+# Copy main entry point
+COPY main.py .
 
 # Expose port 5000
 EXPOSE 5000
 
 # Set environment variables
-ENV FLASK_APP=docker-entrypoint.py
+ENV FLASK_APP=main.py
 ENV FLASK_ENV=production
 ENV PYTHONPATH=/app
 ENV CONTACT_EMAIL=${CONTACT_EMAIL:-your-email@example.com}
 
 # Run the application
-CMD ["python", "docker-entrypoint.py"]
+CMD ["python", "main.py"]

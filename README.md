@@ -56,11 +56,13 @@ cd api && pip install -r requirements.txt
 
 ```
 ├── deploy.sh              # AWS deployment script
+├── dev.sh                 # Local development script
+├── main.py                # Main Flask app entry point
 ├── Dockerfile             # Python 3.13.4 container
-├── docker-entrypoint.py   # Flask app entry point
 ├── terraform-ec2/         # AWS infrastructure (Terraform)
 │   └── main.tf
 ├── api/                   # Backend (Flask API)
+│   ├── index.py           # Flask app factory
 │   ├── api_routes.py      # API endpoint handlers
 │   ├── data_loader.py     # Data loading and caching
 │   ├── chart_generator.py # Plotly chart generation

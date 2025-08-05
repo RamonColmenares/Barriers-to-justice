@@ -89,7 +89,7 @@ echo ""
 # Start backend server
 echo "🐍 Starting Python backend server on http://localhost:5000..."
 export PYTHONPATH="$(pwd)"
-python -m api.index &
+python main.py &
 BACKEND_PID=$!
 
 # Wait a moment for backend to start

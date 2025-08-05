@@ -158,7 +158,7 @@ echo "📦 Deploying backend to EC2..."
 cd ..
 
 scp -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-    Dockerfile docker-entrypoint.py ubuntu@$EC2_IP:~/ 2>/dev/null || {
+    Dockerfile main.py ubuntu@$EC2_IP:~/ 2>/dev/null || {
     echo "❌ Failed to copy Docker files. EC2 instance might not be ready yet."
     exit 1
 }
