@@ -173,7 +173,7 @@ echo "✓ Files copied to EC2"
 
 # Deploy application on EC2
 echo "🐳 Building and running Docker container..."
-ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; bash -s" << 'EOF'
+ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; export CLOUDFRONT_URL='$CLOUDFRONT_URL'; bash -s" << 'EOF'
 # Initialize variables
 CERTBOT_SUCCESS=false
 
@@ -241,7 +241,7 @@ fi
 
 # Install system monitoring tools
 echo "📊 Installing system monitoring tools..."
-sudo apt-get install -y htop iotop sysstat
+sudo apt-get install -y htop iotop sysstat bc
 
 # Install and configure Nginx as reverse proxy with Let's Encrypt (sslip.io hostname)
 echo "🌐 Installing Nginx and certbot..."
@@ -287,25 +287,18 @@ sudo docker build -t juvenile-immigration-api . || {
 # Run the container with ultra-conservative resources for t3.small (2GB RAM)
 echo "🚀 Starting Docker container with ultra-conservative resource limits..."
 sudo docker run -d \
-    --name juvenile-api \
-    -p 5000:5000 \
-    --memory="900m" --memory-swap="1800m" --cpus="1.0" \
-    --oom-kill-disable=false \
-    --restart unless-stopped \
-    -e CONTACT_EMAIL="$CONTACT_EMAIL" \
-    --shm-size=64m \
-    --ulimit memlock=-1 \
-    --ulimit nofile=65536:65536 \
-    --security-opt seccomp=unconfined \
-    --health-cmd="curl -f http://localhost:5000/health || exit 1" \
-    --health-interval=30s \
-    --health-timeout=10s \
-    --health-retries=3 \
-    --health-start-period=60s \
-    juvenile-immigration-api || {
-    echo "❌ Failed to start container"
-    exit 1
-}
+  --name juvenile-api \
+  -p 5000:5000 \
+  --memory="1500m" --memory-swap="1500m" --cpus="1.0" \
+  --oom-kill-disable=false \
+  --restart unless-stopped \
+  -e CONTACT_EMAIL="$CONTACT_EMAIL" \
+  -e ENABLE_BACKEND_CORS="0" \
+  -e HOSTNAME_SSLIP="$HOSTNAME_SSLIP" \
+  -e CLOUDFRONT_URL="$CLOUDFRONT_URL" \
+  --shm-size=128m \
+  --ulimit nofile=65536:65536 \
+  juvenile-immigration-api
 
 # Wait for container to be ready
 echo "⏳ Waiting for container to be ready..."
@@ -343,7 +336,7 @@ check_container_health() {
             log_message "WARNING: High memory usage: ${MEM_USAGE}% - Triggering cleanup"
             # Clear system caches
             sudo sync
-            sudo echo 1 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches' 2>/dev/null || true
             # Force garbage collection in container
             sudo docker exec juvenile-api python3 -c "import gc; gc.collect()" 2>/dev/null || true
         fi
@@ -381,9 +374,9 @@ check_system_resources() {
         # Clear caches if memory is high
         if [ "$MEM_USAGE" -gt 90 ]; then  # Reduced from 95
             sudo sync
-            sudo echo 1 > /proc/sys/vm/drop_caches 2>/dev/null || true
-            sudo echo 2 > /proc/sys/vm/drop_caches 2>/dev/null || true
-            sudo echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches' 2>/dev/null || true
+            sudo sh -c 'echo 2 > /proc/sys/vm/drop_caches' 2>/dev/null || true
+            sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches' 2>/dev/null || true
             log_message "INFO: Cleared system caches due to high memory usage"
         fi
     fi
@@ -422,12 +415,20 @@ fi
 echo "🌐 Configuring Nginx reverse proxy with optimized timeouts..."
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo tee /etc/nginx/sites-available/juvenile-api >/dev/null <<NGINX
+map \$http_origin \$cors_origin {
+    default "";
+    "https://${CLOUDFRONT_URL}" \$http_origin;
+    "https://${HOSTNAME_SSLIP}" \$http_origin;
+    "http://localhost" \$http_origin;
+    ~^http://localhost(:[0-9]+)?\$ \$http_origin;
+}
+
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name _ ${HOSTNAME_SSLIP};
 
-    # Increase timeouts for slow API responses (reduced from 300s to 120s)
+    # Timeouts and buffers
     proxy_connect_timeout 120s;
     proxy_send_timeout 120s;
     proxy_read_timeout 120s;
@@ -436,51 +437,93 @@ server {
     proxy_buffers 8 64k;
     proxy_busy_buffers_size 128k;
 
-    # API routes with CORS
+
+    # API routes with CORS headers on success and error
     location /api/ {
+        # Handle CORS preflight for /api/
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$cors_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Credentials true always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers \$http_access_control_request_headers always;
+            add_header Access-Control-Max-Age 86400 always;
+            return 204;
+        }
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        
-        # Extended timeouts for API endpoints (reduced from 300s to 120s)
-        proxy_connect_timeout 120s;
-        proxy_send_timeout 120s;
-        proxy_read_timeout 120s;
-        proxy_buffering off;
-        proxy_buffer_size 64k;
-        proxy_buffers 8 64k;
-        proxy_busy_buffers_size 128k;
-        
-        # Do NOT add CORS headers here - Flask handles them
+
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
     }
 
     # Health check
     location /health {
+        # Handle CORS preflight for /health
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$cors_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Credentials true always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers \$http_access_control_request_headers always;
+            add_header Access-Control-Max-Age 86400 always;
+            return 204;
+        }
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
     }
 
     # Default catch-all
     location / {
+        # Handle CORS preflight for /
+        if (\$request_method = OPTIONS) {
+            add_header Access-Control-Allow-Origin \$cors_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Credentials true always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers \$http_access_control_request_headers always;
+            add_header Access-Control-Max-Age 86400 always;
+            return 204;
+        }
         proxy_pass http://127.0.0.1:5000;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+    }
+
+    # Return JSON with CORS when upstream errors occur
+    error_page 502 504 = @err_json;
+    location @err_json {
+        default_type application/json;
+        add_header Access-Control-Allow-Origin \$cors_origin always;
+        add_header Vary Origin always;
+        add_header Access-Control-Allow-Credentials true always;
+        return 502 '{"error":"bad_gateway"}';
     }
 }
 NGINX

@@ -47,4 +47,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 
 # Run the application with Gunicorn - memory optimized for t3.small (2GB RAM)
 # Single worker with more threads to handle concurrency without memory overhead
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "8", "--worker-class", "gthread", "--timeout", "180", "--keep-alive", "15", "--max-requests", "100", "--max-requests-jitter", "10", "--worker-tmp-dir", "/dev/shm", "--preload", "--worker-connections", "1000", "api.index:app"]
+CMD ["gunicorn","--bind","0.0.0.0:5000","--workers","1","--threads","2","--worker-class","gthread","--timeout","120","--graceful-timeout","30","--keep-alive","15","--max-requests","200","--max-requests-jitter","50","api.index:app"]

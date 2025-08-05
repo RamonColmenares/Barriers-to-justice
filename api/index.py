@@ -19,19 +19,47 @@ from api.data_loader import load_data
 # Create Flask app
 app = Flask(__name__)
 
-# Configure CORS for production - specific domains only to avoid memory overhead
-CORS(app, 
-     origins=[
-         "https://d30ap9o2ygmovh.cloudfront.net",
-         "https://d3f74pvoh6t7bv.cloudfront.net",
-         "https://54-162-47-183.sslip.io",
-         "http://54-162-47-183.sslip.io",
-         "https://54-224-172-54.sslip.io",
-         "http://54-224-172-54.sslip.io"
-     ],
-     methods=['GET', 'POST', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
-     supports_credentials=False)
+def _env_bool(val: str, default: bool = False) -> bool:
+    if val is None:
+        return default
+    return str(val).strip().lower() in ("1", "true", "yes", "y")
+
+# If you want Flask to handle CORS, set ENABLE_BACKEND_CORS=1.
+# Otherwise, CORS is handled entirely by Nginx and this block is skipped.
+if _env_bool(os.getenv("ENABLE_BACKEND_CORS"), default=False):
+    origins_env = os.getenv("CORS_ALLOW_ORIGINS", "").strip()
+    if origins_env:
+        allowed_origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+    else:
+        allowed_origins = []
+        host_sslip = os.getenv("HOSTNAME_SSLIP", "").strip()
+        cloudfront_url = os.getenv("CLOUDFRONT_URL", "").strip()
+        if cloudfront_url:
+            allowed_origins.append(f"https://{cloudfront_url}")
+        if host_sslip:
+            allowed_origins.append(f"https://{host_sslip}")
+            allowed_origins.append(f"http://{host_sslip}")
+        allowed_origins += [
+            "http://localhost",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ]
+
+    allowed_methods = [m.strip() for m in os.getenv("CORS_ALLOW_METHODS", "GET,POST,OPTIONS").split(",") if m.strip()]
+    allowed_headers = [h.strip() for h in os.getenv("CORS_ALLOW_HEADERS", "Content-Type, Authorization, Accept, X-Requested-With").split(",") if h.strip()]
+    supports_credentials = _env_bool(os.getenv("CORS_ALLOW_CREDENTIALS"), default=False)
+
+    print("🔐 Flask CORS enabled with origins:", allowed_origins)
+
+    CORS(
+        app,
+        origins=allowed_origins,
+        methods=allowed_methods,
+        allow_headers=allowed_headers,
+        supports_credentials=supports_credentials,
+    )
+else:
+    print("🔐 Flask CORS disabled (handled by Nginx)")
 
 # Data loading management
 _data_loading_lock = threading.Lock()
