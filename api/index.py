@@ -3,7 +3,6 @@ Docker entry point for the Juvenile Immigration API
 """
 import os
 from flask import Flask
-from flask_cors import CORS
 
 from api.api_routes import (
     health, get_overview, representation_outcomes, 
@@ -16,27 +15,11 @@ from api.models import cache
 # Create Flask app
 app = Flask(__name__)
 
-# Configure CORS to allow frontend communication
-# Allow both CloudFront and direct EC2 access
-allowed_origins = [
-    'https://d2qqofrfkbwcrl.cloudfront.net',
-    'https://54-145-92-66.sslip.io',
-    'http://localhost:3000',
-    'http://localhost:5173'
-]
-
-CORS(app, 
-     origins=allowed_origins,
-     methods=['GET', 'POST', 'OPTIONS'], 
-     allow_headers=['Content-Type', 'Authorization'],
-     supports_credentials=False)
-
-# Register API routes with proper URL patterns matching frontend expectations
 app.add_url_rule('/health', 'health', health, methods=['GET'])
 app.add_url_rule('/api/overview', 'get_overview', get_overview, methods=['GET'])
 app.add_url_rule('/api/overview/filtered', 'get_filtered_overview', get_filtered_overview, methods=['GET'])
 app.add_url_rule('/api/data/basic-stats', 'basic_stats', get_basic_statistics, methods=['GET'])
-app.add_url_rule('/api/representation-outcomes', 'representation_outcomes', representation_outcomes, methods=['GET'])
+app.add_url_rule('/api/findings/representation-outcomes', 'representation_outcomes', representation_outcomes, methods=['GET'])
 app.add_url_rule('/api/findings/time-series', 'time_series_analysis', time_series_analysis, methods=['GET'])
 app.add_url_rule('/api/findings/chi-square', 'chi_square_analysis', chi_square_analysis, methods=['GET'])
 app.add_url_rule('/api/findings/outcome-percentages', 'outcome_percentages', outcome_percentages, methods=['GET'])
