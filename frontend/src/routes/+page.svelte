@@ -92,6 +92,18 @@
           <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Proposals to narrow who counts as an unaccompanied minor and expanded accelerated dockets reduce time to secure counsel and may lower appearance rates.</p>
         </div>
       </div>
+
+      <!-- 2025: Funding Cut Policy -->
+      <div class="mb-8 flex justify-between items-center w-full right-timeline">
+        <div class="order-1 w-5/12"></div>
+        <div class="z-20 flex items-center order-1 bg-[var(--color-accent)] shadow-xl w-8 h-8 rounded-full">
+          <h3 class="mx-auto font-semibold text-lg text-white">7</h3>
+        </div>
+        <div class="order-1 bg-white rounded-lg shadow-xl w-5/12 px-6 py-4">
+          <h3 class="mb-3 font-bold text-[var(--color-primary)] text-xl">2025 · Access to Counsel Reduction</h3>
+          <p class="text-sm leading-snug tracking-wide text-[var(--color-text-secondary)]">Cuts to federally funded legal aid programs for unaccompanied minors mean fewer juveniles can access free or low-cost legal help, creating a wider representation gap.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>

@@ -38,6 +38,18 @@ variable "contact_email" {
   default     = ""
 }
 
+variable "custom_domain" {
+  description = "Custom domain for the application (optional)"
+  type        = string
+  default     = ""
+}
+
+variable "api_subdomain" {
+  description = "API subdomain (e.g., 'api' for api.yourdomain.com)"
+  type        = string
+  default     = "api"
+}
+
 # Data sources - Use specific AMI ID to avoid permissions issue
 variable "ubuntu_ami_id" {
   description = "Ubuntu 22.04 LTS AMI ID for us-east-1"
@@ -306,8 +318,15 @@ resource "aws_s3_bucket_policy" "frontend" {
 # CloudFront Distribution (optional, for better performance)
 resource "aws_cloudfront_distribution" "frontend" {
   origin {
-    domain_name = aws_s3_bucket.frontend.bucket_regional_domain_name
+    domain_name = aws_s3_bucket.frontend.website_endpoint
     origin_id   = "S3-${aws_s3_bucket.frontend.id}"
+
+    custom_origin_config {
+      http_port                = 80
+      https_port               = 443
+      origin_protocol_policy   = "http-only"
+      origin_ssl_protocols     = ["TLSv1.2"]
+    }
   }
 
   enabled             = true
@@ -353,8 +372,13 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
   }
 
+  # --- Aliases and certificate for custom domain ---
+  aliases = ["barrierstojustice.me", "www.barrierstojustice.me"]
+
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn    = "arn:aws:acm:us-east-1:955777836128:certificate/b697bb02-a6c1-4925-83d1-a0a91becf0f3"
+    ssl_support_method     = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   price_class = "PriceClass_100"  # Use only North America and Europe (cheaper)
@@ -364,6 +388,66 @@ resource "aws_cloudfront_distribution" "frontend" {
 resource "aws_ses_email_identity" "contact_email" {
   count = var.contact_email != "" ? 1 : 0
   email = var.contact_email
+}
+
+# ====================================================================
+# SES DOMAIN IDENTITY + DKIM AUTOMATION
+# ====================================================================
+
+# Get Route 53 hosted zone if custom domain is provided
+data "aws_route53_zone" "main" {
+  count = var.custom_domain != "" ? 1 : 0
+  name  = var.custom_domain
+}
+
+# SES Domain Identity for custom domain
+resource "aws_ses_domain_identity" "main" {
+  count  = var.custom_domain != "" ? 1 : 0
+  domain = var.custom_domain
+}
+
+# SES DKIM Tokens
+resource "aws_ses_domain_dkim" "main" {
+  count  = var.custom_domain != "" ? 1 : 0
+  domain = aws_ses_domain_identity.main[0].domain
+}
+
+# Route 53 DKIM Records (automático si usas Route 53)
+resource "aws_route53_record" "dkim" {
+  count   = var.custom_domain != "" ? 3 : 0
+  zone_id = data.aws_route53_zone.main[0].zone_id
+  name    = "${aws_ses_domain_dkim.main[0].dkim_tokens[count.index]}._domainkey"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["${aws_ses_domain_dkim.main[0].dkim_tokens[count.index]}.dkim.amazonses.com"]
+}
+
+# Route 53 SPF Record (recomendado para deliverability)
+resource "aws_route53_record" "spf" {
+  count   = var.custom_domain != "" ? 1 : 0
+  zone_id = data.aws_route53_zone.main[0].zone_id
+  name    = var.custom_domain
+  type    = "TXT"
+  ttl     = 300
+  records = ["v=spf1 include:amazonses.com ~all"]
+}
+
+# Route 53 DMARC Record (opcional pero recomendado)
+resource "aws_route53_record" "dmarc" {
+  count   = var.custom_domain != "" ? 1 : 0
+  zone_id = data.aws_route53_zone.main[0].zone_id
+  name    = "_dmarc"
+  type    = "TXT"
+  ttl     = 300
+  records = ["v=DMARC1; p=quarantine; rua=mailto:${var.contact_email}; ruf=mailto:${var.contact_email}; fo=1"]
+}
+
+# SES Domain Verification (verifica automáticamente el dominio)
+resource "aws_ses_domain_identity_verification" "main" {
+  count  = var.custom_domain != "" ? 1 : 0
+  domain = aws_ses_domain_identity.main[0].id
+
+  depends_on = [aws_route53_record.dkim]
 }
 
 # IAM role for EC2 to send emails via SES
@@ -384,7 +468,7 @@ resource "aws_iam_role" "ses_role" {
   })
 }
 
-# IAM policy for SES
+# IAM policy for SES (updated with additional permissions for domain verification)
 resource "aws_iam_policy" "ses_policy" {
   name = "${var.project_name}-ses-policy"
 
@@ -395,7 +479,11 @@ resource "aws_iam_policy" "ses_policy" {
         Effect = "Allow"
         Action = [
           "ses:SendEmail",
-          "ses:SendRawEmail"
+          "ses:SendRawEmail",
+          "ses:GetIdentityVerificationAttributes",
+          "ses:GetIdentityDkimAttributes",
+          "ses:ListIdentities",
+          "sesv2:GetEmailIdentity"
         ]
         Resource = "*"
       }
@@ -439,4 +527,19 @@ output "cloudfront_url" {
 output "ses_email_identity" {
   description = "SES email identity for contact form"
   value       = var.contact_email != "" ? aws_ses_email_identity.contact_email[0].email : ""
+}
+
+output "ses_domain_identity" {
+  description = "SES domain identity (if custom domain provided)"
+  value       = var.custom_domain != "" ? aws_ses_domain_identity.main[0].domain : ""
+}
+
+output "ses_dkim_tokens" {
+  description = "SES DKIM tokens for domain verification"
+  value       = var.custom_domain != "" ? aws_ses_domain_dkim.main[0].dkim_tokens : []
+}
+
+output "domain_verification_status" {
+  description = "Domain verification status"
+  value       = var.custom_domain != "" ? "Domain and DKIM configured automatically via Route 53" : "No custom domain provided"
 }

@@ -194,7 +194,7 @@
       <div class="text-center mb-16">
         <h2 class="text-3xl font-bold tracking-tight text-[var(--color-primary)] sm:text-4xl">Data Ethics and Limitations</h2>
         <p class="mt-4 text-lg leading-8 text-[var(--color-text-secondary)] max-w-4xl mx-auto">
-          We focus on responsible use of public administrative data: avoiding personally identifiable information, documenting methods, assessing bias, and communicating uncertainty. Key limitations include proxy measures for representation, missing values, court-by-court variation, and the short 2025 window.
+          We focus on responsible use of public administrative data: avoiding personally identifiable information, documenting methods, assessing bias, and communicating uncertainty. Key limitations include missing values, court-by-court variation, and the short 2025 window.
         </p>
       </div>
       
@@ -254,13 +254,6 @@
           </div>
           
           <div class="space-y-4">
-            <div class="flex items-start">
-              <div class="w-2 h-2 bg-[var(--color-secondary)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
-              <div>
-                <h4 class="font-semibold text-[var(--color-primary)] mb-1">Proxy Measure (In Absentia)</h4>
-                <p class="text-sm text-[var(--color-text-secondary)]">Using in absentia as a proxy for lack of representation is imperfect and may misclassify some cases</p>
-              </div>
-            </div>
             <div class="flex items-start">
               <div class="w-2 h-2 bg-[var(--color-secondary)] rounded-full mt-2 mr-3 flex-shrink-0"></div>
               <div>

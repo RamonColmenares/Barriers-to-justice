@@ -6,6 +6,8 @@ echo ""
 
 # Parse command line arguments
 CONTACT_EMAIL=""
+CUSTOM_DOMAIN=""
+API_SUBDOMAIN="api"
 while [[ $# -gt 0 ]]; do
     case $1 in
         --email)
@@ -16,16 +18,39 @@ while [[ $# -gt 0 ]]; do
             CONTACT_EMAIL="$2"
             shift 2
             ;;
+        --domain|-d)
+            CUSTOM_DOMAIN="$2"
+            shift 2
+            ;;
+        --api-subdomain)
+            API_SUBDOMAIN="$2"
+            shift 2
+            ;;
         --help|-h)
-            echo "Usage: $0 [--email EMAIL] [-e EMAIL]"
+            echo "Usage: $0 [--email EMAIL] [-e EMAIL] [--domain DOMAIN] [-d DOMAIN] [--api-subdomain SUBDOMAIN]"
             echo ""
             echo "Options:"
-            echo "  --email, -e EMAIL    Contact email for SES and Let's Encrypt certificates"
-            echo "  --help, -h           Show this help message"
+            echo "  --email, -e EMAIL         Contact email for SES and Let's Encrypt certificates"
+            echo "  --domain, -d DOMAIN       Custom domain for the application (e.g., barrierstojustice.me)"
+            echo "  --api-subdomain SUBDOMAIN API subdomain (default: api, creates api.yourdomain.com)"
+            echo "  --help, -h                Show this help message"
             echo ""
-            echo "Example:"
+            echo "Examples:"
             echo "  $0 --email contact@yourdomain.com"
-            echo "  $0 -e contact@yourdomain.com"
+            echo "  $0 -e contact@yourdomain.com --domain barrierstojustice.me"
+            echo "  $0 --domain barrierstojustice.me --api-subdomain backend"
+            echo ""
+            echo "SES Domain Configuration:"
+            echo "  When --domain is provided, Terraform will automatically:"
+            echo "  • Create SES domain identity for your domain"
+            echo "  • Configure DKIM authentication (3 CNAME records)"
+            echo "  • Add SPF record (v=spf1 include:amazonses.com ~all)"
+            echo "  • Add DMARC record for enhanced deliverability"
+            echo "  • Use contact@yourdomain.com as sender email"
+            echo ""
+            echo "Prerequisites for domain setup:"
+            echo "  • Domain must be hosted in Route 53 (delegated nameservers)"
+            echo "  • AWS credentials must have Route 53 and SES permissions"
             exit 0
             ;;
         *)
@@ -49,26 +74,36 @@ if [ -z "$CONTACT_EMAIL" ] && [ -f "$HOME/.juvenile_api_deploy" ]; then
     . "$HOME/.juvenile_api_deploy"
 fi
 
-# Prompt for email if still not provided
+# Use verified SES email as default if no email provided
 if [ -z "$CONTACT_EMAIL" ]; then
-    echo "📧 Contact email is required for:"
-    echo "   - AWS SES email service configuration"
-    echo "   - Let's Encrypt SSL certificate registration"
-    echo ""
-    read -p "Enter your contact email: " CONTACT_EMAIL
+    echo "📧 No contact email provided. Checking for verified SES emails..."
     
-    if [ -z "$CONTACT_EMAIL" ]; then
-        echo "❌ Contact email is required for deployment"
-        exit 1
-    fi
+    # Try to get verified emails from SES
+    VERIFIED_EMAILS=$(aws ses list-identities --region us-east-1 --output text --query 'Identities' 2>/dev/null || echo "")
     
-    # Ask if user wants to save the email for future deployments
-    echo ""
-    read -p "Save this email for future deployments? (y/n): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "CONTACT_EMAIL=$CONTACT_EMAIL" > "$HOME/.juvenile_api_deploy"
-        echo "✓ Email saved to $HOME/.juvenile_api_deploy"
+    if echo "$VERIFIED_EMAILS" | grep -q "ramon.colmenaresblanco@gmail.com"; then
+        CONTACT_EMAIL="ramon.colmenaresblanco@gmail.com"
+        echo "✓ Using verified SES email: $CONTACT_EMAIL"
+    else
+        echo "📧 Contact email is required for:"
+        echo "   - AWS SES email service configuration"
+        echo "   - Let's Encrypt SSL certificate registration"
+        echo ""
+        read -p "Enter your contact email: " CONTACT_EMAIL
+        
+        if [ -z "$CONTACT_EMAIL" ]; then
+            echo "❌ Contact email is required for deployment"
+            exit 1
+        fi
+        
+        # Ask if user wants to save the email for future deployments
+        echo ""
+        read -p "Save this email for future deployments? (y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "CONTACT_EMAIL=$CONTACT_EMAIL" > "$HOME/.juvenile_api_deploy"
+            echo "✓ Email saved to $HOME/.juvenile_api_deploy"
+        fi
     fi
 fi
 
@@ -98,13 +133,24 @@ rm -rf build/ api.zip
 echo "🚀 Deploying infrastructure with Terraform..."
 cd terraform-ec2
 terraform init
-terraform plan -var="contact_email=$CONTACT_EMAIL"
-terraform apply -var="contact_email=$CONTACT_EMAIL" -auto-approve
+
+# Prepare Terraform variables (safe array)
+TF_ARGS=(-var "contact_email=$CONTACT_EMAIL")
+if [ -n "$CUSTOM_DOMAIN" ]; then
+  TF_ARGS+=(-var "custom_domain=$CUSTOM_DOMAIN" -var "api_subdomain=$API_SUBDOMAIN")
+fi
+
+echo "📋 Terraform plan with variables: ${TF_ARGS[*]}"
+terraform plan "${TF_ARGS[@]}"
+
+echo "🏗️  Applying Terraform configuration..."
+terraform apply -auto-approve "${TF_ARGS[@]}"
 
 # Get outputs
 EC2_IP=$(terraform output -raw ec2_public_ip 2>/dev/null)
 S3_BUCKET=$(terraform output -raw s3_bucket_name 2>/dev/null)
 CLOUDFRONT_URL=$(terraform output -raw cloudfront_url 2>/dev/null)
+SES_DOMAIN_IDENTITY=$(terraform output -raw ses_domain_identity 2>/dev/null)
 
 if [ -z "$EC2_IP" ]; then
     echo "❌ Failed to get EC2 IP from Terraform"
@@ -114,15 +160,220 @@ fi
 # Compute sslip.io hostname for the current public IP
 HOSTNAME_SSLIP="$(echo "$EC2_IP" | tr '.' '-')".sslip.io
 
+# Determine hosts based on custom domain (if provided)
+if [ -n "$CUSTOM_DOMAIN" ]; then
+    API_HOST="${API_SUBDOMAIN}.${CUSTOM_DOMAIN}"
+    FRONTEND_ORIGIN="https://${CUSTOM_DOMAIN}"
+else
+    API_HOST="$HOSTNAME_SSLIP"
+    FRONTEND_ORIGIN="https://${HOSTNAME_SSLIP}"
+fi
+
 echo "✓ Infrastructure deployed"
 echo "  EC2 Instance IP: $EC2_IP"
 echo "  S3 Bucket: $S3_BUCKET"
 echo "  Hostname: $HOSTNAME_SSLIP"
+if [ -n "$CUSTOM_DOMAIN" ]; then
+    echo "  Domain: $CUSTOM_DOMAIN"
+    echo "  API Subdomain: $API_SUBDOMAIN (API Host: $API_HOST)"
+fi
+
+echo "  API Host: $API_HOST"
+echo "  Frontend Origin: $FRONTEND_ORIGIN"
+
+# Decide sender email for API (SES): prefer contact@<domain> if SES domain identity is configured
+SENDER_EMAIL="$CONTACT_EMAIL"
+if [ -n "$SES_DOMAIN_IDENTITY" ] && [ "$SES_DOMAIN_IDENTITY" != "" ]; then
+    SENDER_EMAIL="contact@$SES_DOMAIN_IDENTITY"
+    echo "✅ Using SES domain identity sender email: $SENDER_EMAIL"
+elif [ -n "$CUSTOM_DOMAIN" ]; then
+    # Fallback check via AWS CLI for backwards compatibility
+    if aws sesv2 get-email-identity --region us-east-1 --email-identity "$CUSTOM_DOMAIN" >/dev/null 2>&1; then
+        SENDER_EMAIL="contact@$CUSTOM_DOMAIN"
+        echo "✅ Using existing SES domain identity: $SENDER_EMAIL"
+    else
+        echo "ℹ️  SES domain identity for $CUSTOM_DOMAIN not found; using contact email: $CONTACT_EMAIL"
+    fi
+else
+    echo "ℹ️  No custom domain provided; using contact email: $CONTACT_EMAIL"
+fi
+
+# === Domain automation (Route 53, ACM, CloudFront) ===
+
+# Tools we need locally
+if ! command -v jq >/dev/null 2>&1; then
+  echo "❌ jq is required (for JSON edits). Install with: brew install jq (macOS) or sudo apt-get install jq (Linux)"
+  exit 1
+fi
+
+if [ -n "$CUSTOM_DOMAIN" ]; then
+  printf "\n=== DOMAIN SETUP FOR $CUSTOM_DOMAIN ===\n"
+  HZ_ID=$(aws route53 list-hosted-zones-by-name --dns-name "$CUSTOM_DOMAIN" \
+    --query 'HostedZones[0].Id' --output text 2>/dev/null | sed 's|/hostedzone/||')
+  if [ -z "$HZ_ID" ] || [ "$HZ_ID" = "None" ]; then
+    echo "❌ Could not find Route 53 hosted zone for $CUSTOM_DOMAIN. Make sure DNS is delegated to Route 53."
+    exit 1
+  fi
+
+  echo "📝 Creating/Updating A record: ${API_HOST} → ${EC2_IP}"
+  cat > /tmp/route53-upsert-api.json <<EOF_API_RR
+  {
+    "Comment": "api A record",
+    "Changes": [{
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "${API_HOST}",
+        "Type": "A",
+        "TTL": 60,
+        "ResourceRecords": [{ "Value": "${EC2_IP}" }]
+      }
+    }]
+  }
+EOF_API_RR
+  aws route53 change-resource-record-sets --hosted-zone-id "$HZ_ID" \
+    --change-batch file:///tmp/route53-upsert-api.json >/dev/null && \
+    echo "✓ Route 53 A record set for ${API_HOST}"
+
+  if [ -n "$CLOUDFRONT_URL" ] && [ "$CLOUDFRONT_URL" != "null" ]; then
+    printf "\n=== ACM (us-east-1) & CloudFront Aliases for $CUSTOM_DOMAIN ===\n"
+
+    # 4a) Find or request ACM cert in us-east-1 for apex + www
+    CERT_ARN=$(aws acm list-certificates --region us-east-1 \
+      --query "CertificateSummaryList[?DomainName=='$CUSTOM_DOMAIN'].CertificateArn | [0]" --output text 2>/dev/null)
+
+    if [ -z "$CERT_ARN" ] || [ "$CERT_ARN" = "None" ]; then
+      echo "📜 Requesting new ACM certificate for $CUSTOM_DOMAIN and www.$CUSTOM_DOMAIN (DNS validation)"
+      CERT_ARN=$(aws acm request-certificate --region us-east-1 \
+        --domain-name "$CUSTOM_DOMAIN" \
+        --subject-alternative-names "www.$CUSTOM_DOMAIN" \
+        --validation-method DNS \
+        --query CertificateArn --output text)
+
+      # Poll hasta que ACM devuelva los ResourceRecord
+      echo "🔧 Creating DNS validation CNAMEs in Route 53..."
+      ATTEMPTS=20
+      SLEEP=5
+      while :; do
+        aws acm describe-certificate --region us-east-1 --certificate-arn "$CERT_ARN" \
+          --query 'Certificate.DomainValidationOptions[].ResourceRecord' --output json \
+          > /tmp/acm-dvo.json || true
+        if jq -e 'length > 0 and .[0].Name and .[0].Value' /tmp/acm-dvo.json >/dev/null 2>&1; then
+          break
+        fi
+        if [ $ATTEMPTS -le 0 ]; then
+          echo "⚠️  ACM no entregó ResourceRecords todavía; continuaré sin crearlos automáticamente."
+          break
+        fi
+        echo "   ... esperando ResourceRecords de ACM ($ATTEMPTS intentos restantes)"
+        ATTEMPTS=$((ATTEMPTS-1))
+        sleep $SLEEP
+      done
+
+      # Crear CNAMEs (tolerante si vienen vacíos)
+      jq -r '.[]? | select(.Name and .Type and .Value) | [.Name, .Type, .Value] | @tsv' /tmp/acm-dvo.json \
+      | while IFS=$'\t' read -r RR_NAME RR_TYPE RR_VALUE; do
+        cat > /tmp/route53-acm-cname.json <<EOF_ACM_RR
+{
+  "Comment": "ACM DNS validation record",
+  "Changes": [{
+    "Action": "UPSERT",
+    "ResourceRecordSet": {
+      "Name": "${RR_NAME}",
+      "Type": "${RR_TYPE}",
+      "TTL": 300,
+      "ResourceRecords": [{ "Value": "\"${RR_VALUE}\"" }]
+    }
+  }]
+}
+EOF_ACM_RR
+        aws route53 change-resource-record-sets --hosted-zone-id "$HZ_ID" \
+          --change-batch file:///tmp/route53-acm-cname.json >/dev/null || true
+      done
+
+      echo "⏳ Waiting for ACM certificate to be ISSUED..."
+      aws acm wait certificate-validated --region us-east-1 --certificate-arn "$CERT_ARN" || {
+        echo "⚠️  ACM validation not complete yet; CloudFront will pick it up once Issued."
+      }
+    else
+      echo "✓ Reusing existing ACM certificate: $CERT_ARN"
+    fi
+
+    # 4b) Update CloudFront distribution to attach aliases and cert
+    DISTRIBUTION_ID=$(aws cloudfront list-distributions \
+      --query "DistributionList.Items[?DomainName=='$CLOUDFRONT_URL'].Id | [0]" \
+      --output text)
+
+    if [ -n "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+      echo "🔄 Updating CloudFront distribution $DISTRIBUTION_ID with aliases and ACM cert..."
+      CF_ETAG=$(aws cloudfront get-distribution-config --id "$DISTRIBUTION_ID" --query ETag --output text)
+      aws cloudfront get-distribution-config --id "$DISTRIBUTION_ID" --query DistributionConfig --output json \
+        > /tmp/cf-config.json
+
+      # Set Aliases and ViewerCertificate
+      jq --arg apex "$CUSTOM_DOMAIN" --arg www "www.$CUSTOM_DOMAIN" --arg cert "$CERT_ARN" '.Aliases = {Quantity: 2, Items: [$apex, $www]} | .ViewerCertificate = {ACMCertificateArn:$cert, SSLSupportMethod:"sni-only", MinimumProtocolVersion:"TLSv1.2_2021", Certificate:$cert, CertificateSource:"acm"}' /tmp/cf-config.json > /tmp/cf-config-updated.json
+
+      aws cloudfront update-distribution --id "$DISTRIBUTION_ID" \
+        --if-match "$CF_ETAG" \
+        --distribution-config file:///tmp/cf-config-updated.json >/dev/null && \
+        echo "✓ CloudFront distribution updated"
+
+      # 4c) Create Route 53 A (Alias) for apex and www → CloudFront
+      # CloudFront hosted zone ID is a global constant
+      CF_ZONE_ID="Z2FDTNDATAQYW2"
+      echo "📝 Creating/Updating Route 53 Alias records for apex and www..."
+      cat > /tmp/route53-alias-apex.json <<EOF_ALIAS_APEX
+      {
+        "Comment": "Apex alias to CloudFront",
+        "Changes": [{
+          "Action": "UPSERT",
+          "ResourceRecordSet": {
+            "Name": "$CUSTOM_DOMAIN",
+            "Type": "A",
+            "AliasTarget": {
+              "HostedZoneId": "$CF_ZONE_ID",
+              "DNSName": "$CLOUDFRONT_URL",
+              "EvaluateTargetHealth": false
+            }
+          }
+        }]
+      }
+EOF_ALIAS_APEX
+      aws route53 change-resource-record-sets --hosted-zone-id "$HZ_ID" \
+        --change-batch file:///tmp/route53-alias-apex.json >/dev/null && \
+        echo "✓ Apex alias set"
+
+      cat > /tmp/route53-alias-www.json <<EOF_ALIAS_WWW
+      {
+        "Comment": "WWW alias to CloudFront",
+        "Changes": [{
+          "Action": "UPSERT",
+          "ResourceRecordSet": {
+            "Name": "www.$CUSTOM_DOMAIN",
+            "Type": "A",
+            "AliasTarget": {
+              "HostedZoneId": "$CF_ZONE_ID",
+              "DNSName": "$CLOUDFRONT_URL",
+              "EvaluateTargetHealth": false
+            }
+          }
+        }]
+      }
+EOF_ALIAS_WWW
+      aws route53 change-resource-record-sets --hosted-zone-id "$HZ_ID" \
+        --change-batch file:///tmp/route53-alias-www.json >/dev/null && \
+        echo "✓ WWW alias set"
+    else
+      echo "⚠️  Could not find CloudFront distribution for $CLOUDFRONT_URL; skipping alias setup"
+    fi
+  fi
+
+  echo "✓ Domain setup stage completed"
+fi
 
 # Build and deploy frontend
 echo "🎨 Building and deploying frontend..."
 cd ../frontend
-echo "PUBLIC_API_URL=https://$HOSTNAME_SSLIP/api" > .env.production
+echo "PUBLIC_API_URL=https://${API_HOST}/api" > .env.production
 
 if [ -f "package.json" ]; then
     npm install --silent
@@ -169,11 +420,19 @@ scp -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o Connec
     exit 1
 }
 
-echo "✓ Files copied to EC2"
+# Copy AWS credentials to EC2 for email service
+echo "🔑 Copying AWS credentials for email service..."
+scp -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+    -r ~/.aws ubuntu@$EC2_IP:~/ 2>/dev/null || {
+    echo "❌ Failed to copy AWS credentials"
+    exit 1
+}
+
+echo "✓ Files and credentials copied to EC2"
 
 # Deploy application on EC2
 echo "🐳 Building and running Docker container..."
-ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; export CLOUDFRONT_URL='$CLOUDFRONT_URL'; bash -s" << 'EOF'
+ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export SENDER_EMAIL='$SENDER_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; export CLOUDFRONT_URL='$CLOUDFRONT_URL'; export CUSTOM_DOMAIN='$CUSTOM_DOMAIN'; export API_HOST='$API_HOST'; bash -s" << 'EOF'
 # Initialize variables
 CERTBOT_SUCCESS=false
 
@@ -286,16 +545,23 @@ sudo docker build -t juvenile-immigration-api . || {
 
 # Run the container with ultra-conservative resources for t3.small (2GB RAM)
 echo "🚀 Starting Docker container with ultra-conservative resource limits..."
+
+# Determine sender email (prefer domain identity if provided from local step)
+VERIFIED_EMAIL="${SENDER_EMAIL:-$CONTACT_EMAIL}"
+echo "✉️  Using sender email: $VERIFIED_EMAIL"
+
 sudo docker run -d \
   --name juvenile-api \
   -p 5000:5000 \
   --memory="1500m" --memory-swap="1500m" --cpus="1.0" \
   --oom-kill-disable=false \
   --restart unless-stopped \
-  -e CONTACT_EMAIL="$CONTACT_EMAIL" \
+  -e CONTACT_EMAIL="$VERIFIED_EMAIL" \
   -e ENABLE_BACKEND_CORS="0" \
   -e HOSTNAME_SSLIP="$HOSTNAME_SSLIP" \
   -e CLOUDFRONT_URL="$CLOUDFRONT_URL" \
+  -e AWS_DEFAULT_REGION="us-east-1" \
+  -v /home/ubuntu/.aws:/root/.aws:ro \
   --shm-size=128m \
   --ulimit nofile=65536:65536 \
   juvenile-immigration-api
@@ -417,8 +683,10 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo tee /etc/nginx/sites-available/juvenile-api >/dev/null <<NGINX
 map \$http_origin \$cors_origin {
     default "";
+    "https://${API_HOST}" \$http_origin;
+    "https://${CUSTOM_DOMAIN}" \$http_origin;
+    "https://www.${CUSTOM_DOMAIN}" \$http_origin;
     "https://${CLOUDFRONT_URL}" \$http_origin;
-    "https://${HOSTNAME_SSLIP}" \$http_origin;
     "http://localhost" \$http_origin;
     ~^http://localhost(:[0-9]+)?\$ \$http_origin;
 }
@@ -426,7 +694,7 @@ map \$http_origin \$cors_origin {
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    server_name _ ${HOSTNAME_SSLIP};
+    server_name _ ${API_HOST};
 
     # Timeouts and buffers
     proxy_connect_timeout 120s;
@@ -542,10 +810,10 @@ fi
 # Quick HTTP check on port 80 before attempting TLS
 echo "🔍 Testing HTTP proxy..."
 sleep 5
-if curl -fsS "http://$HOSTNAME_SSLIP/health" >/dev/null; then
+if curl -fsS "http://$API_HOST/health" >/dev/null; then
     echo "✓ HTTP (80) proxy reachable"
 else
-    echo "⚠️  HTTP (80) proxy not reachable at http://$HOSTNAME_SSLIP/health"
+    echo "⚠️  HTTP (80) proxy not reachable at http://$API_HOST/health"
     echo "Checking nginx status..."
     sudo systemctl status nginx --no-pager
     exit 1
@@ -555,14 +823,14 @@ fi
 echo "🔐 Obtaining SSL certificate..."
 CERTBOT_SUCCESS=false
 if [ -n "$CONTACT_EMAIL" ]; then
-    if sudo certbot --nginx --agree-tos -m "$CONTACT_EMAIL" --no-eff-email --redirect -d "$HOSTNAME_SSLIP" --non-interactive; then
+    if sudo certbot --nginx --agree-tos -m "$CONTACT_EMAIL" --no-eff-email --redirect -d "$API_HOST" --non-interactive; then
         CERTBOT_SUCCESS=true
         echo "✓ SSL certificate obtained successfully"
     else
         echo "❌ Failed to obtain SSL certificate with email"
     fi
 else
-    if sudo certbot --nginx --agree-tos --register-unsafely-without-email --redirect -d "$HOSTNAME_SSLIP" --non-interactive; then
+    if sudo certbot --nginx --agree-tos --register-unsafely-without-email --redirect -d "$API_HOST" --non-interactive; then
         CERTBOT_SUCCESS=true
         echo "✓ SSL certificate obtained successfully"
     else
@@ -572,10 +840,10 @@ fi
 
 if [ "$CERTBOT_SUCCESS" = false ]; then
     echo "⚠️  SSL certificate setup failed, but continuing with HTTP only"
-    echo "You can manually run: sudo certbot --nginx -d $HOSTNAME_SSLIP"
+    echo "You can manually run: sudo certbot --nginx -d $API_HOST"
 fi
 
-echo "✓ Nginx is serving: ${HOSTNAME_SSLIP}"
+echo "✓ Nginx is serving: ${API_HOST}"
 
 # Test endpoints and show status
 echo "🔍 Testing API endpoints..."
@@ -616,70 +884,114 @@ EOF
 
 if [ $? -eq 0 ]; then
     echo ""
-    echo "🔎 Verifying HTTP/HTTPS on $HOSTNAME_SSLIP ..."
+    echo "🔎 Verifying HTTP/HTTPS on $API_HOST ..."
     
     # First, verify HTTP (port 80) works through Nginx
-    if curl -fsS "http://$HOSTNAME_SSLIP/health" >/dev/null; then
+    if curl -fsS "http://$API_HOST/health" >/dev/null; then
         echo "✓ HTTP health check OK"
     else
-        echo "⚠️  HTTP health check failed at http://$HOSTNAME_SSLIP/health"
+        echo "⚠️  HTTP health check failed at http://$API_HOST/health"
     fi
 
-    # Then, test HTTPS if certificate was obtained
-    if [ "$CERTBOT_SUCCESS" = true ]; then
+    # Then, test HTTPS if the certificate file exists on the server
+    if ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ubuntu@$EC2_IP "sudo test -f /etc/letsencrypt/live/$API_HOST/fullchain.pem"; then
         echo "🔒 Testing HTTPS connectivity..."
         ATTEMPTS=20
         SLEEP=3
-        until curl -fsS "https://$HOSTNAME_SSLIP/health" >/dev/null || [ $ATTEMPTS -le 0 ]; do
+        while ! curl -fsS "https://$API_HOST/health" >/dev/null && [ $ATTEMPTS -gt 0 ]; do
             echo "   ... waiting for HTTPS to be ready (attempts left: $ATTEMPTS)"
             sleep $SLEEP
             ATTEMPTS=$((ATTEMPTS-1))
         done
 
-        if curl -fsS "https://$HOSTNAME_SSLIP/health" >/dev/null; then
+        if curl -fsS "https://$API_HOST/health" >/dev/null; then
             echo "✓ HTTPS health check OK"
+            CERTBOT_OK=true
         else
-            echo "⚠️  HTTPS health check failed at https://$HOSTNAME_SSLIP/health"
+            echo "⚠️  HTTPS health check failed at https://$API_HOST/health"
             echo "You may need to wait a few more minutes for the certificate to propagate"
+            CERTBOT_OK=false
         fi
 
         # Test a key API endpoint as well
-        if curl -fsS "https://$HOSTNAME_SSLIP/api/findings/outcome-percentages" -o /dev/null; then
+        if curl -fsS "https://$API_HOST/api/findings/outcome-percentages" -o /dev/null; then
             echo "✓ Findings endpoint OK"
         else
-            echo "⚠️  Findings endpoint check failed at https://$HOSTNAME_SSLIP/api/findings/outcome-percentages"
+            echo "⚠️  Findings endpoint check failed at https://$API_HOST/api/findings/outcome-percentages"
+        fi
+        
+        # Test contact form endpoint
+        echo "🔍 Testing contact form endpoint..."
+        if curl -fsS -X POST "https://$API_HOST/api/contact" \
+            -H "Content-Type: application/json" \
+            -d '{"firstName":"Deploy","lastName":"Test","email":"test@example.com","message":"Deployment test message"}' \
+            -o /dev/null; then
+            echo "✓ Contact form endpoint OK"
+        else
+            echo "⚠️  Contact form endpoint check failed"
         fi
     else
-        echo "⚠️  HTTPS not available - certificate setup failed"
+        echo "⚠️  HTTPS not available yet (certificate file not found on server)"
+        CERTBOT_OK=false
         echo "📡 Using HTTP endpoints only:"
-        echo "   Health Check: http://$HOSTNAME_SSLIP/health"
-        echo "   Overview:     http://$HOSTNAME_SSLIP/api/overview"
+        echo "   Health Check: http://$API_HOST/health"
+        echo "   Overview:     http://$API_HOST/api/overview"
     fi
 
     echo ""
     echo "🎉 DEPLOYMENT SUCCESSFUL!"
     echo ""
     
-    if [ "$CERTBOT_SUCCESS" = true ]; then
+    # Show SES configuration status
+    if [ -n "$SES_DOMAIN_IDENTITY" ] && [ "$SES_DOMAIN_IDENTITY" != "" ]; then
+        echo "📧 SES Configuration:"
+        echo "   ✅ Domain Identity: $SES_DOMAIN_IDENTITY"
+        echo "   ✅ DKIM: Configured automatically via Route 53"
+        echo "   ✅ SPF Record: Added to DNS"
+        echo "   ✅ DMARC Record: Added to DNS"
+        echo "   📨 Sender Email: $SENDER_EMAIL"
+        echo ""
+        echo "   💡 Your domain is ready for email delivery!"
+        echo "   💡 Check SES console to request production access if needed"
+        echo ""
+    elif [ -n "$CUSTOM_DOMAIN" ]; then
+        echo "📧 SES Configuration:"
+        echo "   ⚠️  Domain identity not automatically configured"
+        echo "   📨 Sender Email: $SENDER_EMAIL (fallback to contact email)"
+        echo ""
+        echo "   💡 To enable domain email (contact@$CUSTOM_DOMAIN):"
+        echo "   💡 Check AWS SES console for domain verification status"
+        echo ""
+    else
+        echo "📧 SES Configuration:"
+        echo "   📨 Sender Email: $SENDER_EMAIL"
+        echo "   💡 Using contact email for outbound messages"
+        echo ""
+    fi
+    
+    if [ "$CERTBOT_OK" = true ]; then
         echo "📡 API Endpoints (HTTPS with valid cert):"
-        echo "   Health Check: https://$HOSTNAME_SSLIP/health"
-        echo "   Overview:     https://$HOSTNAME_SSLIP/api/overview"
-        echo "   Basic Stats:  https://$HOSTNAME_SSLIP/api/data/basic-stats"
-        echo "   Findings:     https://$HOSTNAME_SSLIP/api/findings/*"
+        echo "   Health Check: https://$API_HOST/health"
+        echo "   Overview:     https://$API_HOST/api/overview"
+        echo "   Basic Stats:  https://$API_HOST/api/data/basic-stats"
+        echo "   Findings:     https://$API_HOST/api/findings/*"
+        echo "   Contact Form: https://$API_HOST/api/contact"
         echo ""
     fi
     
     echo "📡 API Endpoints (HTTP):"
-    echo "   Health Check: http://$HOSTNAME_SSLIP/health"
-    echo "   Overview:     http://$HOSTNAME_SSLIP/api/overview"
-    echo "   Basic Stats:  http://$HOSTNAME_SSLIP/api/data/basic-stats"
-    echo "   Findings:     http://$HOSTNAME_SSLIP/api/findings/*"
+    echo "   Health Check: http://$API_HOST/health"
+    echo "   Overview:     http://$API_HOST/api/overview"
+    echo "   Basic Stats:  http://$API_HOST/api/data/basic-stats"
+    echo "   Findings:     http://$API_HOST/api/findings/*"
+    echo "   Contact Form: http://$API_HOST/api/contact"
     echo ""
     echo "📡 API Endpoints (by IP, for debugging):"
     echo "   Health Check: http://$EC2_IP/health"
     echo "   Overview:     http://$EC2_IP/api/overview"
     echo "   Basic Stats:  http://$EC2_IP/api/data/basic-stats"
     echo "   Findings:     http://$EC2_IP/api/findings/*"
+    echo "   Contact Form: http://$EC2_IP/api/contact"
     echo ""
     
     if [ "$S3_BUCKET" != "null" ] && [ -n "$S3_BUCKET" ]; then
@@ -687,6 +999,9 @@ if [ $? -eq 0 ]; then
         echo "   S3 Website:   http://$S3_BUCKET.s3-website-us-east-1.amazonaws.com"
         if [ "$CLOUDFRONT_URL" != "null" ] && [ -n "$CLOUDFRONT_URL" ]; then
             echo "   CloudFront:   https://$CLOUDFRONT_URL"
+        fi
+        if [ -n "$CUSTOM_DOMAIN" ]; then
+            echo "   Custom Domain: https://$CUSTOM_DOMAIN"
         fi
         echo ""
     fi
@@ -697,16 +1012,18 @@ if [ $? -eq 0 ]; then
     echo "   Restart API:  ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'sudo docker restart juvenile-api'"
     echo "   System Stats: ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'free -h && df -h'"
     echo "   Diagnostics:  ./diagnose-ec2.sh --ip $EC2_IP"
-    if [ "$CERTBOT_SUCCESS" = false ]; then
-        echo "   Setup SSL:    ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'sudo certbot --nginx -d $HOSTNAME_SSLIP'"
+    if [ "$CERTBOT_OK" = false ]; then
+        echo "   Setup SSL:    ssh -i ~/.ssh/juvenile-immigration-key.pem ubuntu@$EC2_IP 'sudo certbot --nginx -d $API_HOST'"
     fi
     echo ""
     echo "📊 Resource Usage Tips:"
-    echo "   - Container limited to 1.2GB RAM (60% of total)"
+    echo "   - Container limited to 1500MB RAM (75% of total)"
     echo "   - 2GB swap configured for stability"
     echo "   - API monitoring runs every 2 minutes"
     echo "   - Auto-restart on container failure"
     echo "   - Nginx timeouts reduced to 120s"
+    echo "   - AWS SES email service configured"
+    echo "   - AWS credentials mounted as read-only volume"
     echo ""
     echo "🚨 If EC2 becomes unresponsive:"
     echo "   1. Run: ./diagnose-ec2.sh --ip $EC2_IP"
