@@ -30,7 +30,8 @@ class EmailService:
             
             # Get configuration from environment variables
             self.from_email = os.getenv('CONTACT_EMAIL', 'your-email@example.com')
-            self.to_email = os.getenv('CONTACT_EMAIL', 'your-email@example.com')
+            # Fixed destination email for all contact form submissions
+            self.to_email = 'ramon.colmenaresblanco@gmail.com'
             
             # Verify the email identity exists
             self._verify_email_identity()
@@ -79,7 +80,7 @@ class EmailService:
             return False, "Message must be less than 5000 characters"
         
         return True, ""
-    
+
     def send_contact_email(self, form_data: Dict) -> tuple[bool, str]:
         """
         Send contact form email via AWS SES
