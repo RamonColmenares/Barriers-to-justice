@@ -6,6 +6,7 @@ echo ""
 
 # Parse command line arguments
 CONTACT_EMAIL=""
+RECIPIENT_EMAIL=""
 CUSTOM_DOMAIN=""
 API_SUBDOMAIN="api"
 while [[ $# -gt 0 ]]; do
@@ -22,15 +23,20 @@ while [[ $# -gt 0 ]]; do
             CUSTOM_DOMAIN="$2"
             shift 2
             ;;
+        --recipient-email|-r)
+            RECIPIENT_EMAIL="$2"
+            shift 2
+            ;;
         --api-subdomain)
             API_SUBDOMAIN="$2"
             shift 2
             ;;
         --help|-h)
-            echo "Usage: $0 [--email EMAIL] [-e EMAIL] [--domain DOMAIN] [-d DOMAIN] [--api-subdomain SUBDOMAIN]"
+            echo "Usage: $0 [--email EMAIL] [-e EMAIL] [--recipient-email EMAIL] [-r EMAIL] [--domain DOMAIN] [-d DOMAIN] [--api-subdomain SUBDOMAIN]"
             echo ""
             echo "Options:"
             echo "  --email, -e EMAIL         Contact email for SES and Let's Encrypt certificates"
+            echo "  --recipient-email, -r EMAIL  Address that will receive contact form submissions"
             echo "  --domain, -d DOMAIN       Custom domain for the application (e.g., barrierstojustice.me)"
             echo "  --api-subdomain SUBDOMAIN API subdomain (default: api, creates api.yourdomain.com)"
             echo "  --help, -h                Show this help message"
@@ -108,6 +114,12 @@ if [ -z "$CONTACT_EMAIL" ]; then
 fi
 
 echo "✓ Using contact email: $CONTACT_EMAIL"
+
+# Use contact email as recipient if no separate recipient specified
+if [ -z "$RECIPIENT_EMAIL" ]; then
+    RECIPIENT_EMAIL="$CONTACT_EMAIL"
+fi
+echo "✓ Contact form notifications will be sent to: $RECIPIENT_EMAIL"
 
 # Disable AWS CLI pager to avoid opening outputs in "less"
 export AWS_PAGER=""
@@ -432,7 +444,7 @@ echo "✓ Files and credentials copied to EC2"
 
 # Deploy application on EC2
 echo "🐳 Building and running Docker container..."
-ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export SENDER_EMAIL='$SENDER_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; export CLOUDFRONT_URL='$CLOUDFRONT_URL'; export CUSTOM_DOMAIN='$CUSTOM_DOMAIN'; export API_HOST='$API_HOST'; bash -s" << 'EOF'
+ssh -i ~/.ssh/juvenile-immigration-key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ubuntu@$EC2_IP "export CONTACT_EMAIL='$CONTACT_EMAIL'; export CONTACT_TO_EMAIL='$RECIPIENT_EMAIL'; export SENDER_EMAIL='$SENDER_EMAIL'; export EC2_IP='$EC2_IP'; export HOSTNAME_SSLIP='$HOSTNAME_SSLIP'; export CLOUDFRONT_URL='$CLOUDFRONT_URL'; export CUSTOM_DOMAIN='$CUSTOM_DOMAIN'; export API_HOST='$API_HOST'; bash -s" << 'EOF'
 # Initialize variables
 CERTBOT_SUCCESS=false
 
@@ -557,6 +569,7 @@ sudo docker run -d \
   --oom-kill-disable=false \
   --restart unless-stopped \
   -e CONTACT_EMAIL="$VERIFIED_EMAIL" \
+  -e CONTACT_TO_EMAIL="$CONTACT_TO_EMAIL" \
   -e ENABLE_BACKEND_CORS="0" \
   -e HOSTNAME_SSLIP="$HOSTNAME_SSLIP" \
   -e CLOUDFRONT_URL="$CLOUDFRONT_URL" \
