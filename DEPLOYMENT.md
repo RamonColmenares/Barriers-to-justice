@@ -7,8 +7,10 @@ This deployment now includes AWS SES (Simple Email Service) integration for the 
 ### Quick Deployment
 
 ```bash
-# Deploy with email parameter
-./deploy.sh --email your-email@domain.com
+# Deploy with email parameters
+#   --email is the verified sender (domain email)
+#   --recipient-email is where submissions are delivered
+./deploy.sh --email sender@your-domain.com --recipient-email barrierstojustice.mit@gmail.com
 
 # Or using short flag
 ./deploy.sh -e your-email@domain.com
