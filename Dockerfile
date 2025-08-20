@@ -4,16 +4,19 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies for scipy and other packages
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    gfortran \
-    libopenblas-dev \
-    liblapack-dev \
-    pkg-config \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies (robust + noninteractive)
+RUN set -eux; \
+    export DEBIAN_FRONTEND=noninteractive; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        gfortran \
+        libopenblas-dev \
+        liblapack-dev \
+        pkg-config \
+        curl \
+        ca-certificates; \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
 COPY api/requirements.txt .

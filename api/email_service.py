@@ -29,8 +29,6 @@ class EmailService:
             self.ses_client = boto3.client('ses', region_name='us-east-1')
             
             # Get configuration from environment variables
-            # CONTACT_EMAIL represents the verified sender address (domain email)
-            # CONTACT_TO_EMAIL is the destination for contact form submissions
             self.from_email = os.getenv('CONTACT_EMAIL', 'contact@barrierstojustice.me')
             self.to_email = os.getenv('CONTACT_TO_EMAIL', 'barrierstojustice.mit@gmail.com')
             
@@ -81,7 +79,7 @@ class EmailService:
             return False, "Message must be less than 5000 characters"
         
         return True, ""
-    
+
     def send_contact_email(self, form_data: Dict) -> tuple[bool, str]:
         """
         Send contact form email via AWS SES
